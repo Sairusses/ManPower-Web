@@ -1,4 +1,4 @@
-export type UserRole = "client" | "employee";
+export type UserRole = "admin" | "applicant";
 export type JobStatus = "open" | "in_progress" | "completed" | "cancelled";
 export type ProposalStatus = "pending" | "accepted" | "rejected";
 export type ContractStatus = "active" | "completed" | "cancelled";

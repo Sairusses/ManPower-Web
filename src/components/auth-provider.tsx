@@ -10,8 +10,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const publicRoutes = ["", "/", "/auth/login", "/auth/signup"];
 
-  const clientRoutes = ["/client"];
-  const employeeRoutes = ["/employee"];
+  const adminRoutes = ["/admin"];
+  const applicantRoutes = ["/applicant"];
 
   useEffect(() => {
     const finishLoading = () => {
@@ -24,8 +24,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         data: { user },
       } = await supabase.auth.getUser();
 
+      // 🚫 No user logged in
       if (!user) {
-        // No session → only allow public routes
         if (!publicRoutes.includes(location.pathname)) {
           navigate("/");
         }
@@ -36,31 +36,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const role = user?.user_metadata?.role;
 
+      // 🔐 Role-based access check
       if (
-        role === "client" &&
-        employeeRoutes.some((r) => location.pathname.startsWith(r))
+        role === "admin" &&
+        applicantRoutes.some((r) => location.pathname.startsWith(r))
       ) {
-        navigate("/client/dashboard");
+        navigate("/admin/dashboard");
         finishLoading();
 
         return;
       }
 
       if (
-        role === "employee" &&
-        clientRoutes.some((r) => location.pathname.startsWith(r))
+        role === "applicant" &&
+        adminRoutes.some((r) => location.pathname.startsWith(r))
       ) {
-        navigate("/employee/dashboard");
+        navigate("/applicant/dashboard");
         finishLoading();
 
         return;
       }
 
+      // If logged in but on a public route → redirect to correct dashboard
       if (publicRoutes.includes(location.pathname)) {
-        if (role === "client") {
-          navigate("/client/dashboard");
-        } else if (role === "employee") {
-          navigate("/employee/dashboard");
+        if (role === "admin") {
+          navigate("/admin/dashboard");
+        } else if (role === "applicant") {
+          navigate("/applicant/dashboard");
         }
       }
 
@@ -69,6 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     checkSession();
 
+    // 🔄 Listen for login/logout events
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         if (!session) {
@@ -78,32 +81,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           const role = session.user?.user_metadata?.role;
 
-          // 🚨 Enforce role-based access also on auth changes
+          // 🚨 Enforce role restrictions on auth change
           if (
-            role === "client" &&
-            employeeRoutes.some((r) => location.pathname.startsWith(r))
+            role === "admin" &&
+            applicantRoutes.some((r) => location.pathname.startsWith(r))
           ) {
-            navigate("/client/dashboard");
+            navigate("/admin/dashboard");
 
             return;
           }
 
           if (
-            role === "employee" &&
-            clientRoutes.some((r) => location.pathname.startsWith(r))
+            role === "applicant" &&
+            adminRoutes.some((r) => location.pathname.startsWith(r))
           ) {
-            navigate("/employee/dashboard");
+            navigate("/applicant/dashboard");
 
             return;
           }
 
-          // If logged in and on a public route, go to dashboard
+          // If logged in and on public route → redirect
           if (publicRoutes.includes(location.pathname)) {
-            if (role === "client") {
-              navigate("/client/dashboard");
-            } else if (role === "employee") {
-              navigate("/employee/dashboard");
-            }
+            if (role === "admin") navigate("/admin/dashboard");
+            else if (role === "applicant") navigate("/applicant/dashboard");
           }
         }
       },

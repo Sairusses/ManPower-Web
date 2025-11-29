@@ -1,5 +1,4 @@
 import { Link } from "@heroui/link";
-import { Briefcase } from "lucide-react";
 import { Button } from "@heroui/react";
 
 export default function Footer() {
@@ -9,7 +8,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <Briefcase className="h-8 w-8 text-blue-600" />
+              <img alt="F and R Logo" className="h-15 w-15" src="/logo.png" />
               <span className="text-xl font-bold text-gray-900">
                 F and R: Job Specialists Inc.
               </span>

@@ -19,35 +19,37 @@ import {
 } from "@heroui/react";
 
 import Footer from "@/components/footer";
-export default function indexPage() {
+
+export function indexPage() {
   return (
     <>
       <div className="flex flex-col items-center justify-center w-full">
         {/* Navigation Bar */}
         <Navbar isBordered maxWidth="full" shouldHideOnScroll={true}>
-          {/* Navbar Content - Start (Brand and Mobile Toggle) */}
           <NavbarContent justify="start">
-            {/* Mobile Menu Toggle (Visible only on screens smaller than lg) */}
             <NavbarMenuToggle className="lg:hidden" />
-
-            {/* Brand/Logo (Visible on all screens) */}
             <NavbarBrand>
-              <Briefcase className="h-8 w-8 text-blue-600" />
-              <p className="font-bold text-inherit text-2xl">ManPower</p>
+              <Link href="/">
+                <img
+                  alt="F and R Logo"
+                  className="h-8 w-8 mr-2"
+                  src="/logo.png"
+                />
+              </Link>
+              <p className="font-bold text-inherit text-2xl">
+                F and R: Job Specialists Inc.
+              </p>
             </NavbarBrand>
           </NavbarContent>
 
-          {/* Navbar Content - End (Desktop Buttons) */}
           <NavbarContent justify="end">
-            {/* Sign In Button (Visible only on large screens) */}
             <NavbarItem className="hidden lg:flex">
               <Link href="/auth/login">
                 <Button variant="light">Sign In</Button>
               </Link>
             </NavbarItem>
 
-            {/* Get Started Button (Visible on all screens) */}
-            <NavbarItem>
+            <NavbarItem className="hidden lg:flex">
               <Link href="/auth/signup">
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                   Get Started
@@ -58,7 +60,6 @@ export default function indexPage() {
 
           {/* Mobile Menu */}
           <NavbarMenu>
-            {/* Sign In Link in Mobile Menu */}
             <NavbarItem className="w-full">
               <Link className="w-full" href="/auth/login">
                 <Button className="w-full text-xl py-4" variant="light">
@@ -66,7 +67,6 @@ export default function indexPage() {
                 </Button>
               </Link>
             </NavbarItem>
-            {/* Get Started (Optional to repeat, but usually the main CTA stays in the main navbar) */}
             <NavbarItem className="w-full">
               <Link className="w-full" href="/auth/signup">
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full text-xl py-4">
@@ -76,18 +76,20 @@ export default function indexPage() {
             </NavbarItem>
           </NavbarMenu>
         </Navbar>
+
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-blue-50 to-white py-20 w-full">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-                Connect. Create.
-                <span className="text-blue-600"> Collaborate.</span>
+                Find Jobs. Apply. Get Hired.
+                <span className="text-blue-600"> Fast & Easy.</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-                ManPower bridges the gap between skilled professionals and
-                clients who need their expertise. Whether you&#39;re looking to
-                hire or get hired, we make it simple and secure.
+                F and R: Job Specialists Inc. has been connecting qualified
+                applicants with companies since 2018. Admins post job vacancies,
+                and applicants can browse and apply to positions seamlessly.
+                <br />
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/auth/signup">
@@ -95,32 +97,36 @@ export default function indexPage() {
                     className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white"
                     size="lg"
                   >
-                    Get Started as Client
+                    Get Started
                   </Button>
                 </Link>
-                <Link href="/auth/signup">
+                <a
+                  href="https://www.facebook.com/dulce.hr.700887"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
                   <Button
-                    className="w-full sm:w-auto border-blue-600 text-blue-600 hover:bg-blue-50"
+                    className="w-full sm:w-auto bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold"
                     size="lg"
-                    variant="ghost"
                   >
-                    Find Work as Employee
+                    Visit FB Page
                   </Button>
-                </Link>
+                </a>
               </div>
             </div>
           </div>
         </section>
+
         {/* Features Section */}
         <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Why Choose ManPower?
+                Why Choose F and R?
               </h2>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                We provide everything you need to succeed in the modern gig
-                economy
+                We simplify job searching and hiring by matching applicants with
+                verified companies efficiently and securely.
               </p>
             </div>
 
@@ -132,11 +138,11 @@ export default function indexPage() {
                   </div>
                 </CardHeader>
                 <CardBody className="text-3xl font-bold text-center">
-                  Smart Matching
+                  Job Matching
                 </CardBody>
                 <CardFooter className="text-gray-500 text-center pb-8">
-                  Our algorithm connects you with the perfect opportunities or
-                  talent based on skills and requirements.
+                  Applicants see jobs that fit their skills, experience, and
+                  preferences.
                 </CardFooter>
               </Card>
 
@@ -147,11 +153,11 @@ export default function indexPage() {
                   </div>
                 </CardHeader>
                 <CardBody className="text-3xl font-bold text-center">
-                  Real-time Communication
+                  Direct Communication
                 </CardBody>
                 <CardFooter className="text-gray-500 text-center pb-8">
-                  Built-in messaging system keeps you connected with your
-                  clients or employees throughout the project.
+                  Applicants can contact admins or companies directly through
+                  the platform.
                 </CardFooter>
               </Card>
 
@@ -162,11 +168,11 @@ export default function indexPage() {
                   </div>
                 </CardHeader>
                 <CardBody className="text-3xl font-bold text-center">
-                  Secure Payments
+                  Secure Platform
                 </CardBody>
                 <CardFooter className="text-gray-500 text-center pb-8">
-                  Protected transactions and milestone-based payments ensure
-                  everyone gets paid fairly and on time.
+                  Applicant and company data are handled securely, fully
+                  compliant with HR best practices.
                 </CardFooter>
               </Card>
 
@@ -177,11 +183,11 @@ export default function indexPage() {
                   </div>
                 </CardHeader>
                 <CardBody className="text-3xl font-bold text-center">
-                  Verified Profiles
+                  Verified Applicants
                 </CardBody>
                 <CardFooter className="text-gray-500 text-center pb-8">
-                  All users go through our verification process to ensure
-                  quality and trustworthiness.
+                  Every applicant is verified to ensure authenticity and
+                  reliability for hiring companies.
                 </CardFooter>
               </Card>
 
@@ -192,11 +198,11 @@ export default function indexPage() {
                   </div>
                 </CardHeader>
                 <CardBody className="text-3xl font-bold text-center">
-                  Fast Hiring
+                  Fast Job Posting
                 </CardBody>
                 <CardFooter className="text-gray-500 text-center pb-8">
-                  Post a job and start receiving proposals within hours. Get
-                  your project started quickly.
+                  Admins can post job vacancies quickly, letting applicants
+                  apply immediately.
                 </CardFooter>
               </Card>
 
@@ -207,36 +213,38 @@ export default function indexPage() {
                   </div>
                 </CardHeader>
                 <CardBody className="text-3xl font-bold text-center">
-                  Project Management
+                  Job Management
                 </CardBody>
                 <CardFooter className="text-gray-500 text-center pb-8">
-                  Track progress, manage deadlines, and collaborate effectively
-                  with built-in project tools.
+                  Admins manage job postings, track applications, and organize
+                  hiring efficiently.
                 </CardFooter>
               </Card>
             </div>
           </div>
         </section>
+
         {/* CTA Section */}
         <section className="bg-blue-600 py-20 w-full">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Ready to Get Started?
+              Ready to Start Your Career?
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join thousands of professionals and clients who trust ManPower for
-              their projects
+              Join thousands of applicants and companies who trust F and R: Job
+              Specialists Inc.
             </p>
             <Link href="/auth/signup">
               <Button
                 className="bg-white text-blue-600 hover:bg-gray-50"
                 size="lg"
               >
-                Create Your Account Today
+                Sign Up Today
               </Button>
             </Link>
           </div>
         </section>
+
         {/* Footer */}
         <Footer />
       </div>

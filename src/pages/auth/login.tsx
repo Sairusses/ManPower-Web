@@ -1,4 +1,3 @@
-import { Briefcase } from "lucide-react";
 import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Input, Button, Link, Form, addToast } from "@heroui/react";
 import React, { useState } from "react";
@@ -44,7 +43,7 @@ export default function LoginPage() {
 
         addToast({
           title: "Logged in successfully",
-          description: `Welcome back to ManPower, ${fullName}!`,
+          description: `Welcome back to F and R, ${fullName}!`,
           color: "success",
         });
       }
@@ -59,13 +58,15 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center">
           <div className="flex justify-center">
-            <Briefcase className="h-12 w-12 text-blue-600" />
+            <Link href="/">
+              <img alt="F and R Logo" className="h-30 w-30" src="/logo.png" />
+            </Link>
           </div>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
             Welcome Back
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Sign in to your ManPower account
+            Sign in to your F and R account
           </p>
         </div>
         {/* Login Form */}

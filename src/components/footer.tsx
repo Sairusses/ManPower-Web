@@ -1,5 +1,6 @@
 import { Link } from "@heroui/link";
 import { Briefcase } from "lucide-react";
+import { Button } from "@heroui/react";
 
 export default function Footer() {
   return (
@@ -9,75 +10,53 @@ export default function Footer() {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
               <Briefcase className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">ManPower</span>
+              <span className="text-xl font-bold text-gray-900">
+                F and R: Job Specialists Inc.
+              </span>
             </div>
             <p className="text-gray-600 max-w-md">
-              Connecting talented professionals with clients who need their
-              expertise. Build your career or find the perfect freelancer for
-              your project.
+              Helping applicants find jobs since 2018. Admins post available
+              vacancies, and applicants can apply quickly and securely.
+              <br />
+              <Link
+                className="text-blue-600 underline mt-3"
+                href="https://www.facebook.com/dulce.hr.700887"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <Button color="primary">Visit our Facebook page</Button>
+              </Link>
             </p>
           </div>
 
           <div>
             <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">
-              For Clients
+              For Admins
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link
-                  className="text-gray-600 hover:text-blue-600"
-                  href="/auth/signup"
-                >
-                  Post a Job
-                </Link>
+                <p className="text-gray-600 hover:text-blue-600">Post Jobs</p>
               </li>
               <li>
-                <Link
-                  className="text-gray-600 hover:text-blue-600"
-                  href="/auth/signup"
-                >
-                  Browse Talent
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="text-gray-600 hover:text-blue-600"
-                  href="/how-it-works"
-                >
-                  How it Works
-                </Link>
+                <p className="text-gray-600 hover:text-blue-600">
+                  Manage Applicants
+                </p>
               </li>
             </ul>
           </div>
 
           <div>
             <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">
-              For Freelancers
+              For Applicants
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link
-                  className="text-gray-600 hover:text-blue-600"
-                  href="/auth/signup"
-                >
-                  Find Work
-                </Link>
+                <p className="text-gray-600 hover:text-blue-600">Find Jobs</p>
               </li>
               <li>
-                <Link
-                  className="text-gray-600 hover:text-blue-600"
-                  href="/auth/signup"
-                >
+                <p className="text-gray-600 hover:text-blue-600">
                   Build Profile
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="text-gray-600 hover:text-blue-600"
-                  href="/success-stories"
-                >
-                  Success Stories
-                </Link>
+                </p>
               </li>
             </ul>
           </div>
@@ -86,7 +65,7 @@ export default function Footer() {
         <div className="mt-8 pt-8 border-t border-gray-200">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-600 text-sm">
-              © 2025 ManPower. All rights reserved.
+              © 2025 F and R: Job Specialists Inc. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link

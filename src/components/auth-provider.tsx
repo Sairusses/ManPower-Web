@@ -15,7 +15,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const finishLoading = () => {
-      // Ensure spinner displays at least 500ms
       setTimeout(() => setLoading(false), 500);
     };
 
@@ -24,7 +23,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         data: { user },
       } = await supabase.auth.getUser();
 
-      // 🚫 No user logged in
       if (!user) {
         if (!publicRoutes.includes(location.pathname)) {
           navigate("/");
@@ -36,7 +34,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const role = user?.user_metadata?.role;
 
-      // 🔐 Role-based access check
       if (
         role === "admin" &&
         applicantRoutes.some((r) => location.pathname.startsWith(r))
@@ -57,7 +54,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // If logged in but on a public route → redirect to correct dashboard
       if (publicRoutes.includes(location.pathname)) {
         if (role === "admin") {
           navigate("/admin/dashboard");
@@ -71,7 +67,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     checkSession();
 
-    // 🔄 Listen for login/logout events
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         if (!session) {
@@ -81,7 +76,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           const role = session.user?.user_metadata?.role;
 
-          // 🚨 Enforce role restrictions on auth change
           if (
             role === "admin" &&
             applicantRoutes.some((r) => location.pathname.startsWith(r))
@@ -100,10 +94,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return;
           }
 
-          // If logged in and on public route → redirect
           if (publicRoutes.includes(location.pathname)) {
-            if (role === "admin") navigate("/admin/dashboard");
-            else if (role === "applicant") navigate("/applicant/dashboard");
+            if (role === "admin") {
+              navigate("/admin/dashboard");
+            } else if (role === "applicant") {
+              navigate("/applicant/dashboard");
+            }
           }
         }
       },

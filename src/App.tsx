@@ -40,12 +40,12 @@ function App() {
         <Route element={<IndexPage />} path="/" />
         <Route element={<LoginPage />} path="/auth/login" />
         <Route element={<SignupPage />} path="/auth/signup" />
-        <Route element={<MessagesPage />} path="/messages" />
 
         {/* ADMIN ROUTES */}
         <Route element={<AdminLayout />} path="/admin">
           <Route element={<AdminDashboard />} path="dashboard" />
           <Route element={<AdminProfile />} path="profile" />
+          <Route element={<MessagesPage />} path="messages" />
           <Route path="jobs">
             <Route index element={<JobsList />} />
             <Route element={<PostJob />} path="post" />
@@ -66,6 +66,7 @@ function App() {
         <Route element={<ApplicantLayout />} path="/applicant">
           <Route element={<ApplicantDashboard />} path="dashboard" />
           <Route element={<ApplicantProfile />} path="profile" />
+          <Route element={<MessagesPage />} path="messages" />
           <Route path="jobs">
             <Route index element={<ApplicantJobsPage />} />
             <Route element={<ApplicantJobDetailsPage />} path="details" />

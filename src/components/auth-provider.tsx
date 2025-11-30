@@ -7,7 +7,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const publicRoutes = ["", "/", "/auth/login", "/auth/signup"];
+  const publicRoutes = [
+    "",
+    "/",
+    "/auth/login",
+    "/auth/signup",
+    "/auth/verify-2fa",
+  ];
   const adminRoutes = ["/admin"];
   const applicantRoutes = ["/applicant"];
 
@@ -17,6 +23,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!user) {
         if (!publicRoutes.includes(location.pathname)) {
           navigate("/", { replace: true });
+        }
+
+        return;
+      }
+
+      if (user.email && !user.email_confirmed_at) {
+        if (location.pathname !== "/auth/verify-2fa") {
+          navigate(`/auth/verify-2fa?email=${encodeURIComponent(user.email)}`, {
+            replace: true,
+          });
         }
 
         return;

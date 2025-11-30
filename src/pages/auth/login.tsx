@@ -3,6 +3,7 @@ import { Input, Button, Link, Form, addToast } from "@heroui/react";
 import React, { useState } from "react";
 
 import { supabase } from "@/lib/supabase.ts";
+import Footer from "@/components/footer.tsx";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -53,80 +54,83 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <div className="flex justify-center">
-            <Link href="/">
-              <img alt="F and R Logo" className="h-30 w-30" src="/logo.png" />
-            </Link>
+    <>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          {/* Header */}
+          <div className="text-center">
+            <div className="flex justify-center">
+              <Link href="/">
+                <img alt="F and R Logo" className="h-30 w-30" src="/logo.png" />
+              </Link>
+            </div>
+            <h2 className="mt-6 text-3xl font-bold text-gray-900">
+              Welcome Back
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Sign in to your F and R account
+            </p>
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Welcome Back
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Sign in to your F and R account
-          </p>
-        </div>
-        {/* Login Form */}
-        <Card className="p-5">
-          <CardHeader className="flex flex-col">
-            <div className="text-3xl font-bold text-center">Sign In</div>
-            <div className="text-gray-500 text-center">
-              Enter your credentials to access your account
-            </div>
-          </CardHeader>
-          <CardBody>
-            <Form
-              className="w-full flex flex-col gap-4 items-center"
-              onSubmit={onSubmit}
-            >
-              <Input
-                errorMessage="Please enter a valid username"
-                label="Email"
-                labelPlacement="outside"
-                name="email"
-                placeholder="Enter your email"
-                radius="sm"
-                type="email"
-                onChange={onChange}
-              />
-
-              <Input
-                errorMessage="Please enter a valid email"
-                label="Password"
-                labelPlacement="outside"
-                name="password"
-                placeholder="Enter your password"
-                radius="sm"
-                type="password"
-                onChange={onChange}
-              />
-              <Button
-                color="primary"
-                fullWidth={true}
-                type="submit"
-                onChange={onChange}
+          {/* Login Form */}
+          <Card className="p-5">
+            <CardHeader className="flex flex-col">
+              <div className="text-3xl font-bold text-center">Sign In</div>
+              <div className="text-gray-500 text-center">
+                Enter your credentials to access your account
+              </div>
+            </CardHeader>
+            <CardBody>
+              <Form
+                className="w-full flex flex-col gap-4 items-center"
+                onSubmit={onSubmit}
               >
-                Sign In
-              </Button>
-            </Form>
+                <Input
+                  errorMessage="Please enter a valid username"
+                  label="Email"
+                  labelPlacement="outside"
+                  name="email"
+                  placeholder="Enter your email"
+                  radius="sm"
+                  type="email"
+                  onChange={onChange}
+                />
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                Don&#39;t have an account?{" "}
-                <Link
-                  className="text-blue-600 hover:text-blue-500 font-bold"
-                  href="/auth/signup"
+                <Input
+                  errorMessage="Please enter a valid email"
+                  label="Password"
+                  labelPlacement="outside"
+                  name="password"
+                  placeholder="Enter your password"
+                  radius="sm"
+                  type="password"
+                  onChange={onChange}
+                />
+                <Button
+                  color="primary"
+                  fullWidth={true}
+                  type="submit"
+                  onChange={onChange}
                 >
-                  Sign up
-                </Link>
-              </p>
-            </div>
-          </CardBody>
-        </Card>
+                  Sign In
+                </Button>
+              </Form>
+
+              <div className="mt-6 text-center">
+                <p className="text-sm text-gray-600">
+                  Don&#39;t have an account?{" "}
+                  <Link
+                    className="text-blue-600 hover:text-blue-500 font-bold"
+                    href="/auth/signup"
+                  >
+                    Sign up
+                  </Link>
+                </p>
+              </div>
+            </CardBody>
+          </Card>
+        </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 }

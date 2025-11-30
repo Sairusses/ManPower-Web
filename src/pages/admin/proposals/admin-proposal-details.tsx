@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Avatar, Button, Chip, Link, addToast } from "@heroui/react";
-import {File, MapPin, MessageSquare, Phone} from "lucide-react";
+import { File, MapPin, MessageSquare, Phone } from "lucide-react";
 
 import { getSupabaseClient } from "@/lib/supabase";
 import { Proposal } from "@/lib/types";
@@ -63,6 +63,7 @@ export default function AdminProposalDetails() {
 
       setProposal(data as unknown as Proposal);
     } catch (err: any) {
+      // eslint-disable-next-line no-console
       console.error("Error fetching proposal:", err);
       addToast({
         title: "Error",
@@ -125,6 +126,53 @@ export default function AdminProposalDetails() {
 
         if (messageError) throw messageError;
 
+        // Send acceptance email to applicant via Edge Function
+        try {
+          const { error: emailError } = await supabase.functions.invoke(
+            "send-proposal-acceptance-email",
+            {
+              body: {
+                applicantEmail: proposal.applicant?.email,
+                applicantName: proposal.applicant?.full_name || "Applicant",
+                jobTitle: proposal.job?.title || "",
+                jobDescription: proposal.job?.description,
+                proposedRate: proposal.proposed_rate,
+                estimatedDuration: proposal.estimated_duration,
+                coverLetter: proposal.cover_letter,
+              },
+            },
+          );
+
+          if (emailError) {
+            // eslint-disable-next-line no-console
+            console.error("Error sending acceptance email:", emailError);
+            addToast({
+              title: "Warning",
+              description:
+                "Proposal accepted, but email notification failed. Please notify the applicant manually.",
+              color: "warning",
+            });
+          } else {
+            addToast({
+              title: "Email sent",
+              description: "Acceptance email has been sent to the applicant",
+              color: "success",
+            });
+          }
+        } catch (emailErr: any) {
+          // eslint-disable-next-line no-console
+          console.error("Error calling email function:", emailErr);
+          addToast({
+            title: "Warning",
+            description:
+              emailErr.message?.includes("404") ||
+              emailErr.message?.includes("not found")
+                ? "Email function not deployed. Please deploy the Edge Function first."
+                : "Proposal accepted, but email notification failed. Please notify the applicant manually.",
+            color: "warning",
+          });
+        }
+
         window.location.href = `/messages?contractId=${contractData.id}`;
       } else {
         window.location.href = "/admin/proposals";
@@ -136,6 +184,7 @@ export default function AdminProposalDetails() {
         color: decision === "accepted" ? "success" : "danger",
       });
     } catch (err: any) {
+      // eslint-disable-next-line no-console
       console.error("Error updating proposal:", err);
       addToast({
         title: "Error",

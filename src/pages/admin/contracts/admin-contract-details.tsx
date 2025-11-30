@@ -82,9 +82,7 @@ export default function AdminContractDetailsPage() {
                   src={contract.applicant?.avatar_url || ""}
                 />
                 <div>
-                  <p className="font-medium">
-                    {contract.applicant?.full_name}
-                  </p>
+                  <p className="font-medium">{contract.applicant?.full_name}</p>
                   <p className="text-sm text-gray-600">
                     {contract.applicant?.email}
                   </p>

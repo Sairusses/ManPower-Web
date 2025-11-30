@@ -179,7 +179,7 @@ export default function PostJob() {
         description: "Your job is now live and accepting proposals.",
       });
 
-      navigate(`/jobs/details?id=${data.id}`);
+      navigate(`/admin/jobs/details?id=${data.id}`);
     } catch (error: any) {
       throw error;
     } finally {

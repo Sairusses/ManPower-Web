@@ -166,7 +166,12 @@ export default function SignupPage() {
                 onChange={onChange}
               />
 
-              <Button fullWidth color="primary" type="submit" isLoading={isLoading}>
+              <Button
+                fullWidth
+                color="primary"
+                isLoading={isLoading}
+                type="submit"
+              >
                 Sign Up
               </Button>
             </Form>

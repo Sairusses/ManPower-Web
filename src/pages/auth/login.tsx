@@ -10,7 +10,9 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
-  const [loginMethod, setLoginMethod] = useState<"password" | "otp">("password");
+  const [loginMethod, setLoginMethod] = useState<"password" | "otp">(
+    "password",
+  );
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -71,7 +73,9 @@ export default function LoginPage() {
             description: "Please check your email for the 6-digit code",
             color: "success",
           });
-          navigate(`/auth/verify-2fa?email=${encodeURIComponent(formData.email)}`);
+          navigate(
+            `/auth/verify-2fa?email=${encodeURIComponent(formData.email)}`,
+          );
         }
       }
     } catch (error: any) {
@@ -113,20 +117,20 @@ export default function LoginPage() {
           <CardBody>
             <div className="flex gap-2 mb-4">
               <Button
+                className="flex-1"
+                color={loginMethod === "password" ? "primary" : "default"}
                 size="sm"
                 variant={loginMethod === "password" ? "solid" : "bordered"}
-                color={loginMethod === "password" ? "primary" : "default"}
                 onPress={() => setLoginMethod("password")}
-                className="flex-1"
               >
                 Password
               </Button>
               <Button
+                className="flex-1"
+                color={loginMethod === "otp" ? "primary" : "default"}
                 size="sm"
                 variant={loginMethod === "otp" ? "solid" : "bordered"}
-                color={loginMethod === "otp" ? "primary" : "default"}
                 onPress={() => setLoginMethod("otp")}
-                className="flex-1"
               >
                 Email Code
               </Button>
@@ -137,6 +141,7 @@ export default function LoginPage() {
               onSubmit={onSubmit}
             >
               <Input
+                isRequired
                 errorMessage="Please enter a valid email"
                 label="Email"
                 labelPlacement="outside"
@@ -146,11 +151,11 @@ export default function LoginPage() {
                 type="email"
                 value={formData.email}
                 onChange={onChange}
-                isRequired
               />
 
               {loginMethod === "password" && (
                 <Input
+                  isRequired
                   errorMessage="Please enter your password"
                   label="Password"
                   labelPlacement="outside"
@@ -160,24 +165,29 @@ export default function LoginPage() {
                   type="password"
                   value={formData.password}
                   onChange={onChange}
-                  isRequired
                 />
               )}
 
               {loginMethod === "otp" && (
                 <p className="text-sm text-gray-500 text-center">
-                  We&apos;ll send a 6-digit verification code to your email address
+                  We&apos;ll send a 6-digit verification code to your email
+                  address
                 </p>
               )}
 
               <Button
                 color="primary"
                 fullWidth={true}
-                type="submit"
+                isDisabled={
+                  !formData.email ||
+                  (loginMethod === "password" && !formData.password)
+                }
                 isLoading={isLoading}
-                isDisabled={!formData.email || (loginMethod === "password" && !formData.password)}
+                type="submit"
               >
-                {loginMethod === "password" ? "Sign In" : "Send Verification Code"}
+                {loginMethod === "password"
+                  ? "Sign In"
+                  : "Send Verification Code"}
               </Button>
             </Form>
 

@@ -196,37 +196,37 @@ export default function Verify2FAPage() {
               onSubmit={onSubmit}
             >
               <Input
+                classNames={{
+                  input: "text-center text-2xl tracking-widest",
+                }}
                 label="Verification Code"
                 labelPlacement="outside"
+                maxLength={6}
                 name="code"
                 placeholder="Enter 6-digit code"
                 radius="sm"
                 type="text"
-                maxLength={6}
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                classNames={{
-                  input: "text-center text-2xl tracking-widest",
-                }}
               />
 
               <Button
                 color="primary"
                 fullWidth={true}
-                type="submit"
-                isLoading={isLoading}
                 isDisabled={code.length !== 6}
+                isLoading={isLoading}
+                type="submit"
               >
                 Verify Email
               </Button>
 
               <div className="w-full mt-2">
                 <Button
-                  variant="light"
                   fullWidth={true}
-                  onPress={resendCode}
-                  isLoading={isResending}
                   isDisabled={!email}
+                  isLoading={isResending}
+                  variant="light"
+                  onPress={resendCode}
                 >
                   Resend Code
                 </Button>

@@ -7,7 +7,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const publicRoutes = ["", "/", "/auth/login", "/auth/signup", "/auth/verify-2fa"];
+  const publicRoutes = [
+    "",
+    "/",
+    "/auth/login",
+    "/auth/signup",
+    "/auth/verify-2fa",
+  ];
   const adminRoutes = ["/admin"];
   const applicantRoutes = ["/applicant"];
 
@@ -22,10 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Check if user's email is confirmed
-      // If email confirmation is required, don't allow access until verified
       if (user.email && !user.email_confirmed_at) {
-        // User is not verified yet, redirect to verification page
         if (location.pathname !== "/auth/verify-2fa") {
           navigate(`/auth/verify-2fa?email=${encodeURIComponent(user.email)}`, {
             replace: true,

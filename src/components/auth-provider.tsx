@@ -22,6 +22,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      // Check if user's email is confirmed
+      // If email confirmation is required, don't allow access until verified
+      if (user.email && !user.email_confirmed_at) {
+        // User is not verified yet, redirect to verification page
+        if (location.pathname !== "/auth/verify-2fa") {
+          navigate(`/auth/verify-2fa?email=${encodeURIComponent(user.email)}`, {
+            replace: true,
+          });
+        }
+
+        return;
+      }
+
       const role = user?.user_metadata?.role;
 
       const adminDashboard = "/admin/dashboard";

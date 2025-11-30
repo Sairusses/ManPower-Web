@@ -33,19 +33,19 @@ export default function Verify2FAPage() {
     setIsLoading(true);
 
     try {
-      // Try email type first (for login OTP)
+      // Try signup type first (for new signups)
       let { data, error } = await supabase.auth.verifyOtp({
         email: email,
         token: code,
-        type: "email",
+        type: "signup",
       });
 
-      // If that fails, try signup type (for signup verification)
-      if (error && error.message.includes("signup")) {
+      // If that fails, try email type (for login OTP)
+      if (error && !error.message.includes("signup")) {
         const result = await supabase.auth.verifyOtp({
           email: email,
           token: code,
-          type: "signup",
+          type: "email",
         });
 
         data = result.data;
@@ -59,6 +59,36 @@ export default function Verify2FAPage() {
           color: "danger",
         });
       } else if (data?.user) {
+        // Check if this is a new signup that needs to be added to users table
+        const pendingSignup = sessionStorage.getItem("pending_signup");
+
+        if (pendingSignup) {
+          try {
+            const signupData = JSON.parse(pendingSignup);
+
+            // Insert user into users table
+            const { error: dbError } = await supabase.from("users").insert({
+              id: data.user.id,
+              email: signupData.email,
+              full_name: signupData.fullName,
+              role: signupData.role,
+            });
+
+            if (dbError) {
+              // Don't fail the verification if DB insert fails
+              // The user is still verified and can log in
+              // eslint-disable-next-line no-console
+              console.error("Database insert error:", dbError);
+            }
+
+            // Clear pending signup data
+            sessionStorage.removeItem("pending_signup");
+          } catch (parseError) {
+            // eslint-disable-next-line no-console
+            console.error("Error parsing pending signup:", parseError);
+          }
+        }
+
         addToast({
           title: "Email verified successfully",
           description: "You have been logged in",

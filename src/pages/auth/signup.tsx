@@ -40,6 +40,7 @@ export default function SignupPage() {
         color: "danger",
       });
       setIsLoading(false);
+
       return;
     }
 
@@ -52,21 +53,9 @@ export default function SignupPage() {
             display_name: formData.fullName,
             role: "applicant",
           },
+          emailRedirectTo: undefined, // Don't use redirect, we'll use OTP code
         },
       });
-
-      if (data?.user) {
-        try {
-          await supabase.from("users").insert({
-            id: data.user.id,
-            email: formData.email,
-            display_name: formData.fullName,
-            role: "applicant",
-          });
-        } catch (dbError) {
-          console.error("Database insert error:", dbError);
-        }
-      }
 
       if (error) {
         addToast({
@@ -74,15 +63,39 @@ export default function SignupPage() {
           description: error.message,
           color: "danger",
         });
-      } else {
-        addToast({
-          title: "Account created successfully",
-          description: "Please check your email for the 6-digit verification code",
-          color: "success",
-        });
-        // Redirect to verification page
-        navigate(`/auth/verify-2fa?email=${encodeURIComponent(formData.email)}`);
+        setIsLoading(false);
+
+        return;
       }
+
+      // If a session was created (email confirmation disabled), sign out the user
+      // We want to require email verification before allowing access
+      if (data?.session) {
+        await supabase.auth.signOut();
+      }
+
+      // Store signup data in sessionStorage to use after verification
+      if (data?.user) {
+        sessionStorage.setItem(
+          "pending_signup",
+          JSON.stringify({
+            userId: data.user.id,
+            email: formData.email,
+            display_name: formData.fullName,
+            role: "applicant",
+          }),
+        );
+      }
+
+      addToast({
+        title: "Verification code sent",
+        description:
+          "Please check your email for the 6-digit verification code",
+        color: "success",
+      });
+
+      // Redirect to verification page
+      navigate(`/auth/verify-2fa?email=${encodeURIComponent(formData.email)}`);
     } catch (error: any) {
       addToast({
         title: "Error",

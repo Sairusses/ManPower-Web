@@ -19,8 +19,21 @@ export default function SignupPage() {
     fullName: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  // Password requirements validation
+  const passwordRequirements = {
+    minLength: formData.password.length >= 8,
+    hasUpperCase: /[A-Z]/.test(formData.password),
+    hasLowerCase: /[a-z]/.test(formData.password),
+    hasNumber: /[0-9]/.test(formData.password),
+    hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password),
+  };
+
+  const isPasswordValid = Object.values(passwordRequirements).every(Boolean);
+  const passwordsMatch = formData.password === formData.confirmPassword;
 
   function onChange(event: any) {
     setFormData((prev: any) => ({
@@ -37,6 +50,30 @@ export default function SignupPage() {
       addToast({
         title: "Error signing up",
         description: "Please enter your full name",
+        color: "danger",
+      });
+      setIsLoading(false);
+
+      return;
+    }
+
+    // Validate password requirements
+    if (!isPasswordValid) {
+      addToast({
+        title: "Invalid password",
+        description: "Password does not meet all requirements",
+        color: "danger",
+      });
+      setIsLoading(false);
+
+      return;
+    }
+
+    // Validate password match
+    if (!passwordsMatch) {
+      addToast({
+        title: "Passwords do not match",
+        description: "Please make sure both passwords are the same",
         color: "danger",
       });
       setIsLoading(false);
@@ -68,8 +105,6 @@ export default function SignupPage() {
         return;
       }
 
-      // If a session was created (email confirmation disabled), sign out the user
-      // We want to require email verification before allowing access
       if (data?.session) {
         await supabase.auth.signOut();
       }
@@ -143,6 +178,7 @@ export default function SignupPage() {
                 placeholder="Enter your full name"
                 radius="sm"
                 type="text"
+                value={formData.fullName}
                 onChange={onChange}
               />
 
@@ -153,6 +189,7 @@ export default function SignupPage() {
                 placeholder="Enter your email"
                 radius="sm"
                 type="email"
+                value={formData.email}
                 onChange={onChange}
               />
 
@@ -163,12 +200,102 @@ export default function SignupPage() {
                 placeholder="Enter your password"
                 radius="sm"
                 type="password"
+                value={formData.password}
+                onChange={onChange}
+              />
+
+              {/* Password Requirements */}
+              {formData.password && (
+                <div className="text-sm space-y-1">
+                  <p className="text-gray-600 font-medium mb-2">
+                    Password Requirements:
+                  </p>
+                  <div className="space-y-1">
+                    <div
+                      className={`flex items-center gap-2 ${
+                        passwordRequirements.minLength
+                          ? "text-green-600"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      <span>{passwordRequirements.minLength ? "✓" : "○"}</span>
+                      <span>At least 8 characters</span>
+                    </div>
+                    <div
+                      className={`flex items-center gap-2 ${
+                        passwordRequirements.hasUpperCase
+                          ? "text-green-600"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      <span>
+                        {passwordRequirements.hasUpperCase ? "✓" : "○"}
+                      </span>
+                      <span>One uppercase letter</span>
+                    </div>
+                    <div
+                      className={`flex items-center gap-2 ${
+                        passwordRequirements.hasLowerCase
+                          ? "text-green-600"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      <span>
+                        {passwordRequirements.hasLowerCase ? "✓" : "○"}
+                      </span>
+                      <span>One lowercase letter</span>
+                    </div>
+                    <div
+                      className={`flex items-center gap-2 ${
+                        passwordRequirements.hasNumber
+                          ? "text-green-600"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      <span>{passwordRequirements.hasNumber ? "✓" : "○"}</span>
+                      <span>One number</span>
+                    </div>
+                    <div
+                      className={`flex items-center gap-2 ${
+                        passwordRequirements.hasSpecialChar
+                          ? "text-green-600"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      <span>
+                        {passwordRequirements.hasSpecialChar ? "✓" : "○"}
+                      </span>
+                      <span>One special character</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <Input
+                errorMessage={
+                  formData.confirmPassword && !passwordsMatch
+                    ? "Passwords do not match"
+                    : undefined
+                }
+                label="Confirm Password"
+                labelPlacement="outside"
+                name="confirmPassword"
+                placeholder="Confirm your password"
+                radius="sm"
+                type="password"
+                value={formData.confirmPassword}
                 onChange={onChange}
               />
 
               <Button
                 fullWidth
                 color="primary"
+                isDisabled={
+                  !isPasswordValid ||
+                  !passwordsMatch ||
+                  !formData.fullName ||
+                  !formData.email
+                }
                 isLoading={isLoading}
                 type="submit"
               >

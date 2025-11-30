@@ -238,9 +238,9 @@ export default function Verify2FAPage() {
                 Wrong email?{" "}
                 <Link
                   className="text-blue-600 hover:text-blue-500 font-bold"
-                  href="/auth/login"
+                  href="/auth/signup"
                 >
-                  Go back to login
+                  Go back to sign up
                 </Link>
               </p>
             </div>

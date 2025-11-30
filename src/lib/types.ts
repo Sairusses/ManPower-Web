@@ -23,8 +23,6 @@ export interface User {
 
 export interface Job {
   id: string;
-  client_id: string;
-  client_name: string;
   title: string;
   description: string;
   budget_min?: number;
@@ -35,14 +33,13 @@ export interface Job {
   status: JobStatus;
   created_at: string;
   updated_at: string;
-  client?: User;
   files?: string[];
 }
 
 export interface Proposal {
   id: string;
   job_id: string;
-  employee_id: string;
+  applicant_id: string;
   cover_letter?: string;
   proposed_rate?: number;
   estimated_duration?: string;
@@ -51,15 +48,13 @@ export interface Proposal {
   created_at: string;
   updated_at: string;
   job?: Job;
-  employee?: User;
-  client?: User;
+  applicant?: User;
 }
 
 export interface Contract {
   id: string;
   job_id: string;
-  client_id: string;
-  employee_id: string;
+  applicant_id: string;
   proposal_id: string;
   agreed_rate: number;
   start_date: string;
@@ -68,8 +63,7 @@ export interface Contract {
   created_at: string;
   updated_at: string;
   job?: Job;
-  client?: User;
-  employee?: User;
+  applicant?: User;
 }
 
 export interface Message {

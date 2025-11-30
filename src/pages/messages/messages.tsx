@@ -1,63 +1,84 @@
 import { useEffect, useRef, useState } from "react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Avatar, Button, Input, Chip } from "@heroui/react";
-import { MessageSquare, Send } from "lucide-react";
+import { Send } from "lucide-react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
 import { getSupabaseClient } from "@/lib/supabase";
-import ClientNavbar from "@/pages/client/client-navbar";
-import EmployeeNavbar from "@/pages/employee/employee-navbar";
+import AdminNavbar from "@/components/navbar/admin-navbar.tsx";
+import ApplicantNavbar from "@/components/navbar/applicant-navbar.tsx";
 
 export default function MessagesPage() {
   const supabase = getSupabaseClient();
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
 
-  const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [adminProfile, setAdminProfile] = useState<any>(null);
+
   const [conversations, setConversations] = useState<any[]>([]);
+
+  const [messagesByConversation, setMessagesByConversation] = useState<any>({});
+
   const [messages, setMessages] = useState<any[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
-  const [newMessage, setNewMessage] = useState("");
 
+  const selectedConversationRef = useRef<any>(null);
+
+  const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Fetch logged-in user
   useEffect(() => {
-    const getUserProfile = async () => {
+    selectedConversationRef.current = selectedConversation;
+  }, [selectedConversation]);
+
+  useEffect(() => {
+    const loadProfiles = async () => {
       const {
         data: { user },
-        error,
       } = await supabase.auth.getUser();
 
-      if (error || !user) return;
+      if (!user) return;
 
-      const { data, error: profileError } = await supabase
+      const { data: profile } = await supabase
         .from("users")
         .select("*")
         .eq("id", user.id)
         .single();
 
-      if (!profileError) {
-        setUserProfile(data);
-      }
-      setLoading(false);
+      setUserProfile(profile);
+
+      const { data: admin } = await supabase
+        .from("users")
+        .select("*")
+        .eq("role", "admin")
+        .single();
+
+      setAdminProfile(admin);
     };
 
-    getUserProfile();
+    loadProfiles();
   }, []);
 
-  // Fetch conversations
   useEffect(() => {
     if (!userProfile) return;
 
-    const fetchConversations = async () => {
-      const { data: proposals } = await supabase
+    const loadConversations = async () => {
+      let proposalsQuery = supabase
         .from("proposals")
-        .select("*, client:client_id(*), employee:employee_id(*)")
-        .or(`client_id.eq.${userProfile.id},employee_id.eq.${userProfile.id}`);
+        .select("*, applicant:applicant_id(*)");
 
-      const { data: contracts } = await supabase
+      let contractsQuery = supabase
         .from("contracts")
-        .select("*, client:client_id(*), employee:employee_id(*)")
-        .or(`client_id.eq.${userProfile.id},employee_id.eq.${userProfile.id}`);
+        .select("*, applicant:applicant_id(*)");
+
+      if (userProfile.role === "applicant") {
+        proposalsQuery = proposalsQuery.eq("applicant_id", userProfile.id);
+        contractsQuery = contractsQuery.eq("applicant_id", userProfile.id);
+      }
+
+      const { data: proposals } = await proposalsQuery;
+      const { data: contracts } = await contractsQuery;
 
       const combined = [
         ...(proposals?.map((p) => ({ ...p, type: "proposal" })) || []),
@@ -67,14 +88,38 @@ export default function MessagesPage() {
       setConversations(combined);
     };
 
-    fetchConversations();
+    loadConversations();
   }, [userProfile]);
 
-  // Fetch messages for selected conversation
+  useEffect(() => {
+    if (!conversations.length) return;
+
+    const proposalId = params.get("proposalId");
+    const contractId = params.get("contractId");
+
+    let found = null;
+
+    if (proposalId) {
+      found = conversations.find(
+        (c) => c.type === "proposal" && c.id === proposalId,
+      );
+    }
+
+    if (contractId) {
+      found = conversations.find(
+        (c) => c.type === "contract" && c.id === contractId,
+      );
+    }
+
+    if (found) {
+      setSelectedConversation(found);
+    }
+  }, [params, conversations]);
+
   useEffect(() => {
     if (!selectedConversation) return;
 
-    const fetchMessages = async () => {
+    const loadMessages = async () => {
       let query = supabase.from("messages").select("*").order("created_at");
 
       if (selectedConversation.type === "contract") {
@@ -85,28 +130,45 @@ export default function MessagesPage() {
 
       const { data } = await query;
 
+      setMessagesByConversation((prev: any) => ({
+        ...prev,
+        [selectedConversation.id]: data || [],
+      }));
+
       setMessages(data || []);
     };
 
-    fetchMessages();
+    loadMessages();
+  }, [selectedConversation]);
 
-    // Subscribe to realtime updates
+  useEffect(() => {
     const channel = supabase
-      .channel("messages")
+      .channel("realtime-messages")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
         (payload) => {
           const msg = payload.new;
 
-          if (
-            (selectedConversation.type === "contract" &&
-              msg.contract_id === selectedConversation.id) ||
-            (selectedConversation.type === "proposal" &&
-              msg.proposal_id === selectedConversation.id)
-          ) {
+          const convoId = msg.contract_id || msg.proposal_id;
+
+          if (!convoId) return;
+
+          setMessagesByConversation((prev: any) => {
+            const current = prev[convoId] || [];
+
+            if (current.some((m: any) => m.id === msg.id)) return prev;
+
+            return {
+              ...prev,
+              [convoId]: [...current, msg],
+            };
+          });
+
+          const activeConvo = selectedConversationRef.current;
+
+          if (activeConvo && activeConvo.id === convoId) {
             setMessages((prev) => {
-              // avoid duplicates if optimistic already added
               if (prev.some((m) => m.id === msg.id)) return prev;
 
               return [...prev, msg];
@@ -119,31 +181,31 @@ export default function MessagesPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [selectedConversation]);
+  }, []);
 
-  // Auto-scroll on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !userProfile || !selectedConversation) return;
+    if (!newMessage.trim() || !selectedConversation) return;
 
-    const tempId = Date.now(); // temporary id for UI
-    const optimisticMessage = {
+    const tempId = `temp-${Date.now()}`;
+
+    const optimistic = {
       id: tempId,
       sender_id: userProfile.id,
       content: newMessage,
       created_at: new Date().toISOString(),
     };
 
-    setMessages((prev) => [...prev, optimisticMessage]); // update UI immediately
+    setMessages((prev) => [...prev, optimistic]);
     setNewMessage("");
 
     const messageData: any = {
       sender_id: userProfile.id,
-      content: optimisticMessage.content,
+      content: optimistic.content,
     };
 
     if (selectedConversation.type === "contract") {
@@ -152,54 +214,56 @@ export default function MessagesPage() {
       messageData.proposal_id = selectedConversation.id;
     }
 
-    const { error, data } = await supabase
+    const { data, error } = await supabase
       .from("messages")
-      .insert([messageData])
+      .insert(messageData)
       .select()
       .single();
 
     if (error) {
-      // rollback if failed
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
-      console.error(error);
     } else {
       setMessages((prev) => prev.map((m) => (m.id === tempId ? data : m)));
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin h-16 w-16 border-b-2 border-blue-600 rounded-full" />
-      </div>
-    );
-  }
+  const selectConversation = (item: any) => {
+    if (item.type === "contract") {
+      navigate(`/messages?contractId=${item.id}`);
+    } else {
+      navigate(`/messages?proposalId=${item.id}`);
+    }
+
+    if (messagesByConversation[item.id]) {
+      setMessages(messagesByConversation[item.id]);
+    }
+
+    setSelectedConversation(item);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {userProfile?.role === "client" ? <ClientNavbar /> : <EmployeeNavbar />}
+      {userProfile?.role === "admin" ? <AdminNavbar /> : <ApplicantNavbar />}
 
       <div className="max-w-7xl mx-auto py-4 px-4">
         <h1 className="text-3xl font-bold mb-4">Messages</h1>
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[550px]">
-          {/* Sidebar */}
+          {/* SIDEBAR */}
           <Card className="lg:col-span-1" radius="sm" shadow="sm">
             <CardHeader>
               <strong className="px-4 text-lg">Conversations</strong>
             </CardHeader>
+
             <CardBody className="p-0 overflow-y-auto">
               {conversations.map((item) => {
                 const other =
-                  userProfile.role === "client" ? item.employee : item.client;
+                  userProfile?.role === "admin" ? item.applicant : adminProfile;
 
-                const convoMessages = messages.filter((m) =>
-                  item.type === "contract"
-                    ? m.contract_id === item.id
-                    : m.proposal_id === item.id,
-                );
+                const convoMsgs = messagesByConversation[item.id] ?? [];
                 const latestMessage =
-                  convoMessages.length > 0
-                    ? convoMessages[convoMessages.length - 1].content
+                  convoMsgs.length > 0
+                    ? convoMsgs[convoMsgs.length - 1].content
                     : "No messages yet";
 
                 return (
@@ -210,13 +274,14 @@ export default function MessagesPage() {
                         ? "bg-blue-50"
                         : "hover:bg-gray-50"
                     }`}
-                    onClick={() => setSelectedConversation(item)}
+                    onClick={() => selectConversation(item)}
                   >
                     <div className="flex items-center gap-3">
                       <Avatar
-                        name={other?.full_name || "Unknown"}
+                        name={other?.full_name || "User"}
                         src={other?.avatar_url || ""}
                       />
+
                       <div className="flex flex-col w-full">
                         <div className="flex items-center justify-between">
                           <p className="font-medium">{other?.full_name}</p>
@@ -230,6 +295,7 @@ export default function MessagesPage() {
                             {item.type}
                           </Chip>
                         </div>
+
                         <p className="text-sm text-gray-600 truncate max-w-[200px]">
                           {latestMessage}
                         </p>
@@ -238,26 +304,20 @@ export default function MessagesPage() {
                   </button>
                 );
               })}
-
-              {conversations.length === 0 && (
-                <div className="p-6 text-center text-gray-500">
-                  <MessageSquare className="mx-auto mb-2 h-8 w-8 text-gray-300" />
-                  <p>No conversations yet</p>
-                </div>
-              )}
             </CardBody>
           </Card>
 
-          {/* Chat Area */}
+          {/* CHAT */}
           <Card className="lg:col-span-3 flex flex-col" radius="sm" shadow="sm">
             {selectedConversation ? (
               <>
                 <CardHeader className="px-6 border-b border-gray-200 flex items-center justify-between">
                   <strong>
-                    {userProfile.role === "client"
-                      ? selectedConversation.employee?.full_name
-                      : selectedConversation.client?.full_name}
+                    {userProfile?.role === "admin"
+                      ? selectedConversation.applicant?.full_name
+                      : adminProfile?.full_name}
                   </strong>
+
                   <Chip
                     color={
                       selectedConversation.type === "contract"
@@ -270,17 +330,16 @@ export default function MessagesPage() {
                     {selectedConversation.type}
                   </Chip>
                 </CardHeader>
+
                 <CardBody className="flex flex-col p-0">
                   <div className="flex-1 overflow-y-auto p-4 space-y-3">
                     {messages.map((msg) => {
-                      const isOwn = msg.sender_id === userProfile.id;
+                      const isOwn = msg.sender_id === userProfile?.id;
 
                       return (
                         <div
                           key={msg.id}
-                          className={`flex ${
-                            isOwn ? "justify-end" : "justify-start"
-                          }`}
+                          className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                         >
                           <div
                             className={`px-4 py-2 rounded-lg max-w-xs ${
@@ -294,8 +353,10 @@ export default function MessagesPage() {
                         </div>
                       );
                     })}
+
                     <div ref={messagesEndRef} />
                   </div>
+
                   <form
                     className="p-4 border-t border-gray-200 flex gap-2"
                     onSubmit={sendMessage}

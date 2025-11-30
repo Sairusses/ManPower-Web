@@ -9,8 +9,8 @@ import {
   Avatar,
   DropdownMenu,
   DropdownItem,
-  NavbarMenuToggle, // Imported for mobile menu
-  NavbarMenu, // Imported for mobile menu
+  NavbarMenuToggle,
+  NavbarMenu,
   addToast,
 } from "@heroui/react";
 import { useEffect, useState } from "react";
@@ -23,7 +23,7 @@ const navItems = [
   { name: "Browse Jobs", href: "/applicant/jobs" },
   { name: "Proposals", href: "/applicant/proposals" },
   { name: "Contracts", href: "/applicant/contracts" },
-  { name: "Messages", href: "/messages" },
+  { name: "Messages", href: "/applicant/messages" },
 ];
 
 export default function ApplicantNavbar() {
@@ -90,7 +90,7 @@ export default function ApplicantNavbar() {
       isBordered
       maxWidth="full"
       shouldHideOnScroll={true}
-      onMenuOpenChange={setIsMenuOpen} // Handle mobile menu state
+      onMenuOpenChange={setIsMenuOpen}
     >
       {/* Navbar Content - Start (Brand and Mobile Toggle) */}
       <NavbarContent justify="start">
@@ -109,7 +109,7 @@ export default function ApplicantNavbar() {
       </NavbarContent>
 
       {/* Navbar Content - Center (Desktop Links) */}
-      <NavbarContent className="hidden lg:flex gap-4" justify="center">
+      <NavbarContent className="hidden lg:flex gap-4" justify="end">
         {navItems.map((item) => (
           <NavbarItem key={item.name}>
             <Link
@@ -120,11 +120,6 @@ export default function ApplicantNavbar() {
             </Link>
           </NavbarItem>
         ))}
-      </NavbarContent>
-
-      {/* Navbar Content - End (Profile Dropdown) */}
-      <NavbarContent justify="end">
-        {/* Profile Dropdown (always visible) */}
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
             <Avatar
@@ -158,6 +153,38 @@ export default function ApplicantNavbar() {
       </NavbarContent>
 
       {/* Mobile Menu - Only appears when toggled */}
+      <div className="lg:hidden gap-4">
+        <Dropdown placement="bottom-end">
+          <DropdownTrigger>
+            <Avatar
+              isBordered
+              as="button"
+              className="transition-transform"
+              color="primary"
+              name={userDB?.full_name || ""}
+              size="sm"
+              src={userDB?.avatar_url || undefined}
+            />
+          </DropdownTrigger>
+          <DropdownMenu aria-label="Profile Actions" variant="flat">
+            <DropdownItem key="profile" className="h-14 gap-2">
+              <Link href="/applicant/profile">
+                <div className="grid grid-rows-2 justify-start">
+                  <p className="font-normal text-gray-800 text-sm">
+                    Signed in as
+                  </p>
+                  <p className="font-semibold text-black text-sm">
+                    {userDB?.email || user?.email}
+                  </p>
+                </div>
+              </Link>
+            </DropdownItem>
+            <DropdownItem key="logout" color="danger" onClick={signOut}>
+              Log Out
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
+      </div>
       <NavbarMenu>
         {navItems.map((item, index) => (
           <NavbarItem key={`${item.name}-${index}`}>

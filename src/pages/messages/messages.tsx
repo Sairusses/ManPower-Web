@@ -5,8 +5,6 @@ import { Send } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 import { getSupabaseClient } from "@/lib/supabase";
-import AdminNavbar from "@/components/navbar/admin-navbar.tsx";
-import ApplicantNavbar from "@/components/navbar/applicant-navbar.tsx";
 
 export default function MessagesPage() {
   const supabase = getSupabaseClient();
@@ -17,16 +15,16 @@ export default function MessagesPage() {
   const [adminProfile, setAdminProfile] = useState<any>(null);
 
   const [conversations, setConversations] = useState<any[]>([]);
-
   const [messagesByConversation, setMessagesByConversation] = useState<any>({});
-
   const [messages, setMessages] = useState<any[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
 
   const selectedConversationRef = useRef<any>(null);
 
+  // CHANGED: Use a ref for the CONTAINER, not the end element
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
+
   const [newMessage, setNewMessage] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     selectedConversationRef.current = selectedConversation;
@@ -62,12 +60,10 @@ export default function MessagesPage() {
 
   useEffect(() => {
     if (!userProfile) return;
-
     const loadConversations = async () => {
       let proposalsQuery = supabase
         .from("proposals")
         .select("*, applicant:applicant_id(*)");
-
       let contractsQuery = supabase
         .from("contracts")
         .select("*, applicant:applicant_id(*)");
@@ -89,31 +85,25 @@ export default function MessagesPage() {
     };
 
     loadConversations();
-  }, [userProfile]);
+  }, [userProfile, supabase]);
 
   useEffect(() => {
     if (!conversations.length) return;
-
     const proposalId = params.get("proposalId");
     const contractId = params.get("contractId");
 
     let found = null;
 
-    if (proposalId) {
+    if (proposalId)
       found = conversations.find(
         (c) => c.type === "proposal" && c.id === proposalId,
       );
-    }
-
-    if (contractId) {
+    if (contractId)
       found = conversations.find(
         (c) => c.type === "contract" && c.id === contractId,
       );
-    }
 
-    if (found) {
-      setSelectedConversation(found);
-    }
+    if (found) setSelectedConversation(found);
   }, [params, conversations]);
 
   useEffect(() => {
@@ -134,12 +124,11 @@ export default function MessagesPage() {
         ...prev,
         [selectedConversation.id]: data || [],
       }));
-
       setMessages(data || []);
     };
 
     loadMessages();
-  }, [selectedConversation]);
+  }, [selectedConversation, supabase]);
 
   useEffect(() => {
     const channel = supabase
@@ -149,7 +138,6 @@ export default function MessagesPage() {
         { event: "INSERT", schema: "public", table: "messages" },
         (payload) => {
           const msg = payload.new;
-
           const convoId = msg.contract_id || msg.proposal_id;
 
           if (!convoId) return;
@@ -159,10 +147,7 @@ export default function MessagesPage() {
 
             if (current.some((m: any) => m.id === msg.id)) return prev;
 
-            return {
-              ...prev,
-              [convoId]: [...current, msg],
-            };
+            return { ...prev, [convoId]: [...current, msg] };
           });
 
           const activeConvo = selectedConversationRef.current;
@@ -181,10 +166,19 @@ export default function MessagesPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [supabase]);
 
+  // CHANGED: Scroll logic targeted specifically at the container
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (chatContainerRef.current) {
+      const { scrollHeight, clientHeight } = chatContainerRef.current;
+
+      // Scroll to the bottom of the container
+      chatContainerRef.current.scrollTo({
+        top: scrollHeight - clientHeight,
+        behavior: "smooth",
+      });
+    }
   }, [messages]);
 
   const sendMessage = async (e: React.FormEvent) => {
@@ -192,7 +186,6 @@ export default function MessagesPage() {
     if (!newMessage.trim() || !selectedConversation) return;
 
     const tempId = `temp-${Date.now()}`;
-
     const optimistic = {
       id: tempId,
       sender_id: userProfile.id,
@@ -228,23 +221,24 @@ export default function MessagesPage() {
   };
 
   const selectConversation = (item: any) => {
+    const basePath = window.location.pathname.startsWith("/admin")
+      ? "/admin/messages"
+      : "/applicant/messages";
+
     if (item.type === "contract") {
-      navigate(`/messages?contractId=${item.id}`);
+      navigate(`${basePath}?contractId=${item.id}`);
     } else {
-      navigate(`/messages?proposalId=${item.id}`);
+      navigate(`${basePath}?proposalId=${item.id}`);
     }
 
     if (messagesByConversation[item.id]) {
       setMessages(messagesByConversation[item.id]);
     }
-
     setSelectedConversation(item);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {userProfile?.role === "admin" ? <AdminNavbar /> : <ApplicantNavbar />}
-
       <div className="max-w-7xl mx-auto py-4 px-4">
         <h1 className="text-3xl font-bold mb-4">Messages</h1>
 
@@ -254,12 +248,10 @@ export default function MessagesPage() {
             <CardHeader>
               <strong className="px-4 text-lg">Conversations</strong>
             </CardHeader>
-
             <CardBody className="p-0 overflow-y-auto">
               {conversations.map((item) => {
                 const other =
                   userProfile?.role === "admin" ? item.applicant : adminProfile;
-
                 const convoMsgs = messagesByConversation[item.id] ?? [];
                 const latestMessage =
                   convoMsgs.length > 0
@@ -281,7 +273,6 @@ export default function MessagesPage() {
                         name={other?.full_name || "User"}
                         src={other?.avatar_url || ""}
                       />
-
                       <div className="flex flex-col w-full">
                         <div className="flex items-center justify-between">
                           <p className="font-medium">{other?.full_name}</p>
@@ -295,7 +286,6 @@ export default function MessagesPage() {
                             {item.type}
                           </Chip>
                         </div>
-
                         <p className="text-sm text-gray-600 truncate max-w-[200px]">
                           {latestMessage}
                         </p>
@@ -317,7 +307,6 @@ export default function MessagesPage() {
                       ? selectedConversation.applicant?.full_name
                       : adminProfile?.full_name}
                   </strong>
-
                   <Chip
                     color={
                       selectedConversation.type === "contract"
@@ -332,7 +321,11 @@ export default function MessagesPage() {
                 </CardHeader>
 
                 <CardBody className="flex flex-col p-0">
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {/* CHANGED: Attach ref to the scrollable container */}
+                  <div
+                    ref={chatContainerRef}
+                    className="flex-1 overflow-y-auto p-4 space-y-3"
+                  >
                     {messages.map((msg) => {
                       const isOwn = msg.sender_id === userProfile?.id;
 
@@ -342,19 +335,14 @@ export default function MessagesPage() {
                           className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                         >
                           <div
-                            className={`px-4 py-2 rounded-lg max-w-xs ${
-                              isOwn
-                                ? "bg-blue-600 text-white"
-                                : "bg-gray-100 text-gray-900"
-                            }`}
+                            className={`px-4 py-2 rounded-lg max-w-xs ${isOwn ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-900"}`}
                           >
                             {msg.content}
                           </div>
                         </div>
                       );
                     })}
-
-                    <div ref={messagesEndRef} />
+                    {/* Removed the empty messagesEndRef div */}
                   </div>
 
                   <form

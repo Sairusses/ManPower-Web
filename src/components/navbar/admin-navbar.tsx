@@ -20,7 +20,7 @@ import { supabase } from "@/lib/supabase.ts";
 // Define the navigation items for easy mapping
 const navItems = [
   { name: "Dashboard", href: "/admin/dashboard" },
-  { name: "My Jobs", href: "/admin/jobs" },
+  { name: "Jobs", href: "/admin/jobs" },
   { name: "Proposals", href: "/admin/proposals" },
   { name: "Contracts", href: "/admin/contracts" },
   { name: "Messages", href: "/messages" },

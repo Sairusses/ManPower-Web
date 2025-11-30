@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Card, CardBody, CardHeader } from "@heroui/card";
@@ -7,9 +5,8 @@ import { Chip, addToast, Avatar, Link, Button } from "@heroui/react";
 import { ArrowLeft, File } from "lucide-react";
 
 import { getSupabaseClient } from "@/lib/supabase";
-import EmployeeNavbar from "@/pages/employee/employee-navbar.tsx";
 
-export default function EmployeeProposalDetailsPage() {
+export default function ApplicantProposalsDetails() {
   const supabase = getSupabaseClient();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -17,7 +14,7 @@ export default function EmployeeProposalDetailsPage() {
 
   const [loading, setLoading] = useState(true);
   const [proposal, setProposal] = useState<any>(null);
-  const [client, setClient] = useState<any>(null);
+  const [admin, setAdmin] = useState<any>(null);
   const [job, setJob] = useState<any>(null);
 
   useEffect(() => {
@@ -53,15 +50,14 @@ export default function EmployeeProposalDetailsPage() {
 
       setJob(jobData);
 
-      // fetch client
-      if (jobData?.client_id) {
-        const { data: clientData } = await supabase
+      if (jobData) {
+        const { data: adminData } = await supabase
           .from("users")
           .select("*")
-          .eq("id", jobData.client_id)
+          .eq("role", "admin")
           .single();
 
-        setClient(clientData);
+        setAdmin(adminData);
       }
     } catch (err) {
       console.error(err);
@@ -72,11 +68,10 @@ export default function EmployeeProposalDetailsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <EmployeeNavbar />
 
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-row gap-6 justify-items-center\">
-          <Link href="/employee/proposals">
+        <div className="flex flex-row gap-6 justify-items-center">
+          <Link href="/applicant/proposals">
             <Button
               className="mb-4"
               color="primary"
@@ -98,47 +93,48 @@ export default function EmployeeProposalDetailsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Left: Client Info */}
+            {/* Left: Admin Info  */}
             <Card className="md:col-span-1 px-4 py-2" shadow="sm">
               <CardHeader>
-                <h2 className="text-lg font-bold">Client Information</h2>
+                <h2 className="text-lg font-bold">Admin Information</h2>
               </CardHeader>
               <CardBody>
-                {client ? (
+                {admin ? (
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
-                      <Avatar name={client.full_name} src={client.avatar_url} />
+                      <Avatar name={admin.full_name} src={admin.avatar_url} />
                       <div>
-                        <div className="font-semibold">{client.full_name}</div>
+                        <div className="font-semibold">{admin.full_name}</div>
                         <div className="text-sm text-gray-500">
-                          {client.company_name || "Individual Client"}
+                          {admin.company_name || "Platform Admin"}
                         </div>
                       </div>
                     </div>
                     <div className="text-sm text-gray-700">
-                      <strong>Email:</strong> {client.email}
+                      <strong>Email:</strong> {admin.email}
                     </div>
-                    {client.phone && (
+                    {admin.phone && (
                       <div className="text-sm text-gray-700">
-                        <strong>Phone:</strong> {client.phone}
+                        {/* UPDATED: client -> admin */}
+                        <strong>Phone:</strong> {admin.phone}
                       </div>
                     )}
-                    {client.location && (
+                    {admin.location && (
                       <div className="text-sm text-gray-700">
-                        <strong>Location:</strong> {client.location}
+                        <strong>Location:</strong> {admin.location}
                       </div>
                     )}
-                    {client.website && (
+                    {admin.website && (
                       <div className="text-sm text-gray-700">
                         <strong>Website:</strong>{" "}
-                        <Link href={client.website} target="_blank">
-                          {client.website}
+                        <Link href={admin.website} target="_blank">
+                          {admin.website}
                         </Link>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="text-gray-500">No client info found</div>
+                  <div className="text-gray-500">No admin info found</div>
                 )}
               </CardBody>
             </Card>
@@ -187,6 +183,7 @@ export default function EmployeeProposalDetailsPage() {
                       <ul className="mt-2 space-y-2">
                         {proposal.attachments.map(
                           (fileStr: string, idx: number) => {
+                            // Note: Assuming fileStr is still JSON stringified object
                             const file = JSON.parse(fileStr);
 
                             return (

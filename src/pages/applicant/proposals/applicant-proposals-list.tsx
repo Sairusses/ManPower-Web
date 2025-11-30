@@ -4,10 +4,9 @@ import { Button, Link, addToast } from "@heroui/react";
 import { Eye } from "lucide-react";
 
 import { getSupabaseClient } from "@/lib/supabase";
-import EmployeeNavbar from "@/pages/employee/employee-navbar";
 import { Proposal } from "@/lib/types.ts";
 
-export default function EmployeeProposalsPage() {
+export default function ApplicantProposalsList() {
   const supabase = getSupabaseClient();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,17 +25,17 @@ export default function EmployeeProposalsPage() {
       if (userError || !user) {
         addToast({
           title: "Not logged in",
-          description:
-            "You must be logged in as an employee to view proposals.",
+          description: "You must be logged in to view proposals.",
           color: "danger",
         });
+
         return;
       }
 
       const { data, error } = await supabase
         .from("proposals")
         .select("*, job:jobs(id, title, description)")
-        .eq("employee_id", user.id)
+        .eq("applicant_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -64,7 +63,6 @@ export default function EmployeeProposalsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <EmployeeNavbar />
       <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <h1 className="text-2xl font-bold mb-2">My Proposals</h1>
         <p className="text-gray-600 mb-6">
@@ -85,14 +83,18 @@ export default function EmployeeProposalsPage() {
                 shadow="sm"
               >
                 <CardHeader className="flex justify-between items-start">
-                  <div>
-                    <h2 className="text-xl font-semibold">{proposal.job?.title}</h2>
-                    <p className="text-gray-600 text-sm">
+                  <div className="mr-20">
+                    <h2 className="text-xl font-semibold">
+                      {proposal.job?.title}
+                    </h2>
+                    <p className="mt-2 text-gray-600 text-sm line-clamp-2">
                       {proposal.job?.description}
                     </p>
                   </div>
-                  <div className="flex justify-end">
-                    <Link href={`/employee/proposals/details?id=${proposal.id}`}>
+                  <div className="flex justify-end self-center">
+                    <Link
+                      href={`/applicant/proposals/details?id=${proposal.id}`}
+                    >
                       <Button color="primary" startContent={<Eye />}>
                         View
                       </Button>

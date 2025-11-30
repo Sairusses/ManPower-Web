@@ -3,13 +3,20 @@ import type { Job } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { Button, Chip, Input, Textarea, addToast, Link } from "@heroui/react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
-import { Clock, Filter, File, ArrowLeft } from "lucide-react";
+import {
+  Clock,
+  Filter,
+  File,
+  ArrowLeft,
+  ImageIcon,
+  FileText,
+  Download,
+} from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { getSupabaseClient } from "@/lib/supabase";
-import EmployeeNavbar from "@/pages/employee/employee-navbar";
 
-export default function EmployeeJobDetailsPage() {
+export default function ApplicantJobDetailsPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
@@ -76,7 +83,7 @@ export default function EmployeeJobDetailsPage() {
       if (userError || !user) {
         addToast({
           title: "Not logged in",
-          description: "You must be logged in as an employee to apply.",
+          description: "You must be logged in to apply.",
           color: "danger",
         });
 
@@ -108,7 +115,7 @@ export default function EmployeeJobDetailsPage() {
 
       const { error } = await supabase.from("proposals").insert({
         job_id: job?.id,
-        employee_id: user.id,
+        applicant_id: user.id,
         cover_letter: coverLetter,
         proposed_rate: parseFloat(proposedRate),
         estimated_duration: estimatedDuration,
@@ -129,7 +136,7 @@ export default function EmployeeJobDetailsPage() {
         description: "Your proposal has been sent to the client.",
         color: "success",
       });
-      navigate("/employee/jobs");
+      navigate("/applicant/jobs");
     } catch (error: any) {
       throw error;
     }
@@ -153,10 +160,8 @@ export default function EmployeeJobDetailsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <EmployeeNavbar />
-
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <Link href="/employee/jobs">
+        <Link href="/applicant/jobs">
           <Button
             className="mb-4"
             color="primary"
@@ -170,19 +175,19 @@ export default function EmployeeJobDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Job Details */}
           <div className="lg:col-span-2">
-            <Card radius="sm" shadow="sm">
+            <Card className="px-6 pt-2" radius="sm" shadow="sm">
               <CardHeader>
                 <div className="flex justify-between w-full items-start">
                   <div>
                     <h1 className="text-2xl font-bold capitalize">
                       {job.title}
                     </h1>
-                    <p className="text-gray-600">{job.description}</p>
+                    <p className="mt-4 text-gray-600">{job.description}</p>
                   </div>
                   <div className="text-right">
                     {job.budget_min !== undefined &&
                       job.budget_max !== undefined && (
-                        <div className="flex items-center font-semibold">
+                        <div className="text-blue-600 flex items-center font-semibold whitespace-nowrap">
                           ₱{job.budget_min} - ₱{job.budget_max}
                         </div>
                       )}
@@ -223,11 +228,13 @@ export default function EmployeeJobDetailsPage() {
 
                 {/* Files */}
                 {Array.isArray(job.files) && job.files.length > 0 && (
-                  <div className="mt-4">
-                    <h3 className="font-semibold mb-2">Attachments</h3>
-                    <ul className="list-disc ml-6">
+                  <div className="mb-6">
+                    <h4 className="text-md font-semibold text-gray-700 mb-2">
+                      Attachments
+                    </h4>
+                    <div className="grid gap-2">
                       {job.files.map((file: any, index: number) => {
-                        let parsed;
+                        let parsed: any;
 
                         try {
                           parsed = JSON.parse(file);
@@ -236,19 +243,54 @@ export default function EmployeeJobDetailsPage() {
                         }
 
                         return (
-                          <li key={index}>
-                            <Link
-                              className="flex items-center gap-2 text-blue-600 hover:underline"
-                              href={parsed.url}
-                              rel="noopener noreferrer"
-                              target="_blank"
-                            >
-                              <File className="h-4 w-4" /> {parsed.name}
-                            </Link>
-                          </li>
+                          <a
+                            key={index}
+                            className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-md shadow-sm hover:shadow-md transition-shadow"
+                            href={parsed.url}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            <div className="flex items-center gap-3">
+                              {parsed.type?.startsWith("image/") ? (
+                                <ImageIcon className="h-5 w-5 text-gray-500" />
+                              ) : parsed.type?.includes("pdf") ? (
+                                <FileText className="h-5 w-5 text-red-500" />
+                              ) : (
+                                <File className="h-5 w-5 text-gray-500" />
+                              )}
+
+                              <div className="flex flex-col min-w-0">
+                                <a
+                                  className="text-blue-600 hover:underline truncate"
+                                  href={parsed.url}
+                                  rel="noopener noreferrer"
+                                  target="_blank"
+                                  title={parsed.name}
+                                >
+                                  {parsed.name}
+                                </a>
+                                {parsed.size && (
+                                  <span className="text-xs text-gray-400">
+                                    {Math.round(parsed.size / 1024)} KB
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <Button
+                                isIconOnly
+                                size="sm"
+                                title="Download"
+                                variant="light"
+                              >
+                                <Download className="h-4 w-4 text-gray-600" />
+                              </Button>
+                            </div>
+                          </a>
                         );
                       })}
-                    </ul>
+                    </div>
                   </div>
                 )}
               </CardBody>
@@ -257,9 +299,9 @@ export default function EmployeeJobDetailsPage() {
 
           {/* Proposal Form */}
           <div className="lg:col-span-1">
-            <Card radius="sm" shadow="sm">
+            <Card className="px-4 py-2" radius="sm" shadow="sm">
               <CardHeader>
-                <h2 className="text-xl font-semibold">Submit a Proposal</h2>
+                <h2 className="text-xl font-bold">Submit a Proposal</h2>
               </CardHeader>
               <CardBody>
                 <Textarea
@@ -314,7 +356,7 @@ export default function EmployeeJobDetailsPage() {
                   />
 
                   {/* Show selected files */}
-                  <ul className="mt-2 space-y-2">
+                  <ul className="mt-4 space-y-2">
                     {attachments.map((file, index) => (
                       <li
                         key={index}

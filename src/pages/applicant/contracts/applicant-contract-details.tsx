@@ -4,49 +4,59 @@ import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Avatar, Chip } from "@heroui/react";
 
 import { getSupabaseClient } from "@/lib/supabase";
-import EmployeeNavbar from "@/pages/employee/employee-navbar";
 
-export default function EmployeeContractDetailsPage() {
+export default function ApplicantContractDetails() {
   const supabase = getSupabaseClient();
   const location = useLocation();
 
-  // get id from query string (?id=...)
   const searchParams = new URLSearchParams(location.search);
   const id = searchParams.get("id");
 
   const [contract, setContract] = useState<any>(null);
+  const [admin, setAdmin] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      setLoading(false);
 
-    const fetchContract = async () => {
+      return;
+    }
+
+    const fetchContractDetails = async () => {
       setLoading(true);
-      const { data, error } = await supabase
+
+      const { data: adminData } = await supabase
+        .from("users")
+        .select(`full_name, avatar_url, company_name, email`)
+        .eq("role", "admin")
+        .single();
+
+      setAdmin(adminData);
+
+      const { data: contractData, error } = await supabase
         .from("contracts")
         .select(
           `*, 
-           clients:client_id(full_name, avatar_url, company_name, email), 
-           jobs:job_id(title, description, category, timeline)`,
+           jobs:job_id(title, description, category, duration)`,
         )
         .eq("id", id)
         .single();
 
       if (error) {
-        console.error(error);
+        setContract(null);
       } else {
-        setContract(data);
+        setContract(contractData);
       }
+
       setLoading(false);
     };
 
-    fetchContract();
+    fetchContractDetails();
   }, [id]);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <EmployeeNavbar />
-
       <div className="max-w-4xl mx-auto py-6 px-4">
         <h1 className="text-3xl font-bold mb-6">Contract Details</h1>
 
@@ -63,17 +73,15 @@ export default function EmployeeContractDetailsPage() {
             <CardHeader className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Avatar
-                  name={contract.clients?.full_name || "Client"}
-                  src={contract.clients?.avatar_url || ""}
+                  name={admin?.full_name || "Admin"}
+                  src={admin?.avatar_url || ""}
                 />
                 <div>
-                  <p className="font-medium">{contract.clients?.full_name}</p>
+                  <p className="font-medium">{admin?.full_name}</p>
                   <p className="text-sm text-gray-600">
-                    {contract.clients?.company_name || "No company"}
+                    {admin?.company_name || "Platform Admin"}
                   </p>
-                  <p className="text-sm text-gray-600">
-                    {contract.clients?.email}
-                  </p>
+                  <p className="text-sm text-gray-600">{admin?.email}</p>
                 </div>
               </div>
               <Chip
@@ -108,9 +116,9 @@ export default function EmployeeContractDetailsPage() {
                   <p className="text-gray-700">₱{contract.agreed_rate}</p>
                 </div>
                 <div>
-                  <p className="font-medium">Timeline</p>
+                  <p className="font-medium">Duration</p>
                   <p className="text-gray-700">
-                    {contract.jobs?.timeline || "N/A"}
+                    {contract.jobs?.duration || "N/A"}
                   </p>
                 </div>
                 <div>

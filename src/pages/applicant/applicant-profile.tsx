@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
-import EmployeeNavbar from "@/pages/employee/employee-navbar";
 
-export default function EmployeeProfile() {
+export default function ApplicantProfile() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -51,7 +50,6 @@ export default function EmployeeProfile() {
     setProfile((prev: any) => ({ ...prev, [field]: value }));
   };
 
-  // ---------- Avatar Upload ----------
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true);
@@ -107,7 +105,6 @@ export default function EmployeeProfile() {
     }
   };
 
-  // ---------- Resume Upload ----------
   const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setResumeUploading(true);
@@ -210,7 +207,6 @@ export default function EmployeeProfile() {
     }
   };
 
-  // ---------- Skills ----------
   const addSkill = () => {
     if (!newSkill.trim()) return;
     const updatedSkills = [...(profile.skills || []), newSkill.trim()];
@@ -225,7 +221,6 @@ export default function EmployeeProfile() {
     setProfile((prev: any) => ({ ...prev, skills: updatedSkills }));
   };
 
-  // ---------- Save ----------
   const handleSave = async () => {
     try {
       const { error } = await supabase
@@ -271,7 +266,6 @@ export default function EmployeeProfile() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <EmployeeNavbar />
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>

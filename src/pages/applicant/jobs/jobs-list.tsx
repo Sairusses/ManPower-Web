@@ -14,9 +14,8 @@ import {
 import { Card, CardBody, CardHeader } from "@heroui/card";
 
 import { getSupabaseClient } from "@/lib/supabase";
-import EmployeeNavbar from "@/pages/employee/employee-navbar.tsx";
 
-export default function EmployeeJobsPage() {
+export default function ApplicantJobsPage() {
   const [user, setUser] = useState<any>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,21 +53,21 @@ export default function EmployeeJobsPage() {
   useEffect(() => {
     if (user) {
       fetchJobs();
-      fetchEmployeeApplications();
+      fetchApplicantApplications();
     }
   }, [user, searchTerm, categoryFilter, minBudget, maxBudget]);
 
-  const fetchEmployeeApplications = async () => {
+  const fetchApplicantApplications = async () => {
     try {
       const { data: proposals } = await supabase
         .from("proposals")
         .select("job_id")
-        .eq("employee_id", user.id);
+        .eq("applicant_id", user.id);
 
       const { data: contracts } = await supabase
         .from("contracts")
         .select("job_id")
-        .eq("employee_id", user.id);
+        .eq("applicant_id", user.id);
 
       const ids = [
         ...(proposals?.map((p) => p.job_id) || []),
@@ -139,7 +138,6 @@ export default function EmployeeJobsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <EmployeeNavbar />
 
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
@@ -210,9 +208,9 @@ export default function EmployeeJobsPage() {
                           {job.title}
                         </div>
                         <div className="text-medium mb-2 text-gray-800">
-                          {job.client_name}
+                          F and R Admin
                         </div>
-                        <div className="text-base text-gray-600">
+                        <div className="text-base text-gray-600 line-clamp-2">
                           {job.description}
                         </div>
                       </div>
@@ -259,7 +257,7 @@ export default function EmployeeJobsPage() {
                             Already Applied
                           </Button>
                         ) : (
-                          <Link href={`/employee/jobs/details?id=${job.id}`}>
+                          <Link href={`/applicant/jobs/details?id=${job.id}`}>
                             <Button color="primary" size="sm">
                               <Eye className="h-4 w-4 mr-2" />
                               View & Apply

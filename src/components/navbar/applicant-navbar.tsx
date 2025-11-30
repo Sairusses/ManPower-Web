@@ -19,10 +19,10 @@ import { supabase } from "@/lib/supabase.ts";
 
 // Define the navigation items for easy mapping
 const navItems = [
-  { name: "Dashboard", href: "/employee/dashboard" },
-  { name: "Browse Jobs", href: "/employee/jobs" },
-  { name: "Proposals", href: "/employee/proposals" },
-  { name: "Contracts", href: "/employee/contracts" },
+  { name: "Dashboard", href: "/applicant/dashboard" },
+  { name: "Browse Jobs", href: "/applicant/jobs" },
+  { name: "Proposals", href: "/applicant/proposals" },
+  { name: "Contracts", href: "/applicant/contracts" },
   { name: "Messages", href: "/messages" },
 ];
 
@@ -139,7 +139,7 @@ export default function ApplicantNavbar() {
           </DropdownTrigger>
           <DropdownMenu aria-label="Profile Actions" variant="flat">
             <DropdownItem key="profile" className="h-14 gap-2">
-              <Link href="/employee/profile">
+              <Link href="/applicant/profile">
                 <div className="grid grid-rows-2 justify-start">
                   <p className="font-normal text-gray-800 text-sm">
                     Signed in as

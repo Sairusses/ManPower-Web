@@ -20,7 +20,7 @@ import {
 
 import Footer from "@/components/footer";
 
-export function indexPage() {
+export default function IndexPage() {
   return (
     <>
       <div className="flex flex-col items-center justify-center w-full">

@@ -8,12 +8,11 @@ import {
   Link,
   addToast,
 } from "@heroui/react";
-
 import React, { useState } from "react";
 
 import { supabase } from "@/lib/supabase.ts";
 
-export function SignupPage() {
+export default function SignupPage() {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -36,6 +35,7 @@ export function SignupPage() {
         description: "Please enter your full name",
         color: "danger",
       });
+
       return;
     }
 
@@ -81,7 +81,6 @@ export function SignupPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-1 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-
         {/* Header */}
         <div className="text-center">
           <div className="flex justify-center">
@@ -98,7 +97,9 @@ export function SignupPage() {
         {/* Signup Card */}
         <Card className="p-5">
           <CardHeader className="flex flex-col">
-            <div className="text-3xl font-bold text-center">Applicant Signup</div>
+            <div className="text-3xl font-bold text-center">
+              Applicant Signup
+            </div>
             <div className="text-gray-500 text-center">
               Fill in your details to create an applicant account
             </div>
@@ -136,7 +137,7 @@ export function SignupPage() {
                 onChange={onChange}
               />
 
-              <Button color="primary" fullWidth type="submit">
+              <Button fullWidth color="primary" type="submit">
                 Sign Up
               </Button>
             </Form>

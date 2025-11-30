@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Avatar, Button, Chip, Link, addToast } from "@heroui/react";
-import { File, MapPin, Phone } from "lucide-react";
+import {File, MapPin, MessageSquare, Phone} from "lucide-react";
 
 import { getSupabaseClient } from "@/lib/supabase";
 import { Proposal } from "@/lib/types";
@@ -221,6 +221,20 @@ export default function AdminProposalDetails() {
                   View Resume
                 </Button>
               </Link>
+            )}
+
+            {proposal && (
+              <div className="pt-4">
+                <Button
+                  color="primary"
+                  startContent={<MessageSquare className="h-4 w-4" />}
+                  onPress={() =>
+                    (window.location.href = `/messages?proposalId=${proposal.id}&applicantId=${proposal.applicant?.id}`)
+                  }
+                >
+                  Message Applicant
+                </Button>
+              </div>
             )}
           </CardBody>
         </Card>

@@ -27,17 +27,14 @@ export default function AdminContractDetailsPage() {
       .from("contracts")
       .select(
         `*, 
-         applicants:applicant_id(full_name, avatar_url, skills, email, hourly_rate, resume_url), 
-         jobs:job_id(title, description, category, timeline)`,
+           applicant:applicant_id(id,full_name,avatar_url,skills,email,hourly_rate, resume_url),
+           job:job_id(title,description,category,duration)`,
+        // jobs not finding
       )
       .eq("id", id)
       .single();
 
-    if (error) {
-      console.error(error);
-    } else {
-      setContract(data);
-    }
+    if (!error) setContract(data);
     setLoading(false);
   };
 
@@ -49,11 +46,8 @@ export default function AdminContractDetailsPage() {
       .update({ status })
       .eq("id", id);
 
-    if (error) {
-      console.error("Failed to update contract status:", error);
-    } else {
-      setContract((prev: any) => ({ ...prev, status }));
-    }
+    if (!error) setContract((prev: any) => ({ ...prev, status }));
+
     setUpdating(false);
   };
 
@@ -84,18 +78,18 @@ export default function AdminContractDetailsPage() {
             <CardHeader className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Avatar
-                  name={contract.applicants?.full_name || "Applicant"}
-                  src={contract.applicants?.avatar_url || ""}
+                  name={contract.applicant?.full_name || "Applicant"}
+                  src={contract.applicant?.avatar_url || ""}
                 />
                 <div>
                   <p className="font-medium">
-                    {contract.applicants?.full_name}
+                    {contract.applicant?.full_name}
                   </p>
                   <p className="text-sm text-gray-600">
-                    {contract.applicants?.email}
+                    {contract.applicant?.email}
                   </p>
                   <p className="text-sm text-gray-600">
-                    Hourly Rate: ₱{contract.applicants?.hourly_rate || "N/A"}
+                    Hourly Rate: ₱{contract.applicant?.hourly_rate || "N/A"}
                   </p>
                 </div>
               </div>
@@ -112,20 +106,17 @@ export default function AdminContractDetailsPage() {
               {/* Job Info */}
               <div>
                 <h2 className="text-xl font-semibold mb-1">
-                  {contract.jobs?.title}
+                  {contract.job?.title}
                 </h2>
-                <p className="text-gray-700">{contract.jobs?.description}</p>
-                <p className="text-sm text-gray-500 mt-1">
-                  Category: {contract.jobs?.category || "N/A"}
-                </p>
+                <p className="text-gray-700">{contract.job?.description}</p>
               </div>
 
               {/* Skills */}
-              {contract.applicants?.skills?.length > 0 && (
+              {contract.applicant?.skills?.length > 0 && (
                 <div>
                   <p className="font-medium">Skills</p>
                   <div className="flex flex-wrap gap-2 mt-1">
-                    {contract.applicants.skills.map((skill: string) => (
+                    {contract.applicant.skills.map((skill: string) => (
                       <Chip key={skill} size="sm" variant="flat">
                         {skill}
                       </Chip>
@@ -135,10 +126,10 @@ export default function AdminContractDetailsPage() {
               )}
 
               {/* Resume */}
-              {contract.applicants?.resume_url && (
+              {contract.applicant?.resume_url && (
                 <div>
                   <p className="font-medium">Resume</p>
-                  <Link href={contract.applicants.resume_url} target="_blank">
+                  <Link href={contract.applicant.resume_url} target="_blank">
                     <Button>View Resume</Button>
                   </Link>
                 </div>
@@ -151,9 +142,9 @@ export default function AdminContractDetailsPage() {
                   <p className="text-gray-700">₱{contract.agreed_rate}</p>
                 </div>
                 <div>
-                  <p className="font-medium">Timeline</p>
+                  <p className="font-medium">Duration</p>
                   <p className="text-gray-700">
-                    {contract.jobs?.timeline || "N/A"}
+                    {contract.job?.duration || "N/A"}
                   </p>
                 </div>
                 <div>

@@ -7,7 +7,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const publicRoutes = ["", "/", "/auth/login", "/auth/signup"];
+  const publicRoutes = ["", "/", "/auth/login", "/auth/signup", "/auth/verify-2fa"];
   const adminRoutes = ["/admin"];
   const applicantRoutes = ["/applicant"];
 

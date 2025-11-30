@@ -5,6 +5,7 @@ import { AuthProvider } from "@/components/auth-provider.tsx";
 // Auth
 import LoginPage from "@/pages/auth/login.tsx";
 import SignupPage from "@/pages/auth/signup.tsx";
+import Verify2FAPage from "@/pages/auth/verify-2fa.tsx";
 // Public
 import IndexPage from "@/pages/index";
 import MessagesPage from "@/pages/messages/messages.tsx";
@@ -40,6 +41,7 @@ function App() {
         <Route element={<IndexPage />} path="/" />
         <Route element={<LoginPage />} path="/auth/login" />
         <Route element={<SignupPage />} path="/auth/signup" />
+        <Route element={<Verify2FAPage />} path="/auth/verify-2fa" />
         <Route element={<MessagesPage />} path="/messages" />
 
         {/* ADMIN ROUTES */}

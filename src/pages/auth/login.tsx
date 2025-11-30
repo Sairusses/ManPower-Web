@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardBody } from "@heroui/card";
 import { Input, Button, Link, Form, addToast } from "@heroui/react";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { supabase } from "@/lib/supabase.ts";
 
@@ -9,6 +10,9 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
+  const [loginMethod, setLoginMethod] = useState<"password" | "otp">("password");
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   function onChange(event: any) {
     setFormData((prevFormData: any) => {
@@ -18,37 +22,66 @@ export default function LoginPage() {
       };
     });
   }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setIsLoading(true);
+
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (error) {
-        console.error("Supabase login error:", error);
-        addToast({
-          title: "Error logging in",
-          description: error.message,
-          color: "danger",
+      if (loginMethod === "password") {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
         });
-      }
-      if (!error) {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
 
-        const fullName = user?.user_metadata?.fullName || "User";
+        if (error) {
+          addToast({
+            title: "Error logging in",
+            description: error.message,
+            color: "danger",
+          });
+        } else {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
 
-        addToast({
-          title: "Logged in successfully",
-          description: `Welcome back to F and R, ${fullName}!`,
-          color: "success",
+          const fullName = user?.user_metadata?.fullName || "User";
+
+          addToast({
+            title: "Logged in successfully",
+            description: `Welcome back to F and R, ${fullName}!`,
+            color: "success",
+          });
+        }
+      } else {
+        // Email OTP login - sends 6-digit code
+        const { error } = await supabase.auth.signInWithOtp({
+          email: formData.email,
         });
+
+        if (error) {
+          addToast({
+            title: "Error sending code",
+            description: error.message,
+            color: "danger",
+          });
+        } else {
+          addToast({
+            title: "Verification code sent",
+            description: "Please check your email for the 6-digit code",
+            color: "success",
+          });
+          navigate(`/auth/verify-2fa?email=${encodeURIComponent(formData.email)}`);
+        }
       }
     } catch (error: any) {
-      throw error;
+      addToast({
+        title: "Error",
+        description: error.message || "An unexpected error occurred",
+        color: "danger",
+      });
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -78,38 +111,73 @@ export default function LoginPage() {
             </div>
           </CardHeader>
           <CardBody>
+            <div className="flex gap-2 mb-4">
+              <Button
+                size="sm"
+                variant={loginMethod === "password" ? "solid" : "bordered"}
+                color={loginMethod === "password" ? "primary" : "default"}
+                onPress={() => setLoginMethod("password")}
+                className="flex-1"
+              >
+                Password
+              </Button>
+              <Button
+                size="sm"
+                variant={loginMethod === "otp" ? "solid" : "bordered"}
+                color={loginMethod === "otp" ? "primary" : "default"}
+                onPress={() => setLoginMethod("otp")}
+                className="flex-1"
+              >
+                Email Code
+              </Button>
+            </div>
+
             <Form
               className="w-full flex flex-col gap-4 items-center"
               onSubmit={onSubmit}
             >
               <Input
-                errorMessage="Please enter a valid username"
+                errorMessage="Please enter a valid email"
                 label="Email"
                 labelPlacement="outside"
                 name="email"
                 placeholder="Enter your email"
                 radius="sm"
                 type="email"
+                value={formData.email}
                 onChange={onChange}
+                isRequired
               />
 
-              <Input
-                errorMessage="Please enter a valid email"
-                label="Password"
-                labelPlacement="outside"
-                name="password"
-                placeholder="Enter your password"
-                radius="sm"
-                type="password"
-                onChange={onChange}
-              />
+              {loginMethod === "password" && (
+                <Input
+                  errorMessage="Please enter your password"
+                  label="Password"
+                  labelPlacement="outside"
+                  name="password"
+                  placeholder="Enter your password"
+                  radius="sm"
+                  type="password"
+                  value={formData.password}
+                  onChange={onChange}
+                  isRequired
+                />
+              )}
+
+              {loginMethod === "otp" && (
+                <p className="text-sm text-gray-500 text-center">
+                  We&apos;ll send a 6-digit verification code to your email address
+                </p>
+              )}
+
               <Button
                 color="primary"
                 fullWidth={true}
                 type="submit"
-                onChange={onChange}
+                isLoading={isLoading}
+                isDisabled={!formData.email || (loginMethod === "password" && !formData.password)}
               >
-                Sign In
+                {loginMethod === "password" ? "Sign In" : "Send Verification Code"}
               </Button>
             </Form>
 

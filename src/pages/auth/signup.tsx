@@ -9,15 +9,18 @@ import {
   addToast,
 } from "@heroui/react";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { supabase } from "@/lib/supabase.ts";
 
 export default function SignupPage() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     password: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   function onChange(event: any) {
     setFormData((prev: any) => ({
@@ -28,6 +31,7 @@ export default function SignupPage() {
 
   async function signUpApplicant(e: React.FormEvent) {
     e.preventDefault();
+    setIsLoading(true);
 
     if (!formData.fullName || formData.fullName.trim() === "") {
       addToast({
@@ -35,7 +39,7 @@ export default function SignupPage() {
         description: "Please enter your full name",
         color: "danger",
       });
-
+      setIsLoading(false);
       return;
     }
 
@@ -45,19 +49,23 @@ export default function SignupPage() {
         password: formData.password,
         options: {
           data: {
-            fullName: formData.fullName,
+            display_name: formData.fullName,
             role: "applicant",
           },
         },
       });
 
-      if (data) {
-        await supabase.from("users").insert({
-          id: data.user?.id,
-          email: formData.email,
-          full_name: formData.fullName,
-          role: "applicant",
-        });
+      if (data?.user) {
+        try {
+          await supabase.from("users").insert({
+            id: data.user.id,
+            email: formData.email,
+            display_name: formData.fullName,
+            role: "applicant",
+          });
+        } catch (dbError) {
+          console.error("Database insert error:", dbError);
+        }
       }
 
       if (error) {
@@ -68,13 +76,21 @@ export default function SignupPage() {
         });
       } else {
         addToast({
-          title: "Signed up successfully",
-          description: `Welcome to F and R ${formData.fullName}`,
+          title: "Account created successfully",
+          description: "Please check your email for the 6-digit verification code",
           color: "success",
         });
+        // Redirect to verification page
+        navigate(`/auth/verify-2fa?email=${encodeURIComponent(formData.email)}`);
       }
     } catch (error: any) {
-      throw error;
+      addToast({
+        title: "Error",
+        description: error.message || "An unexpected error occurred",
+        color: "danger",
+      });
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -137,7 +153,7 @@ export default function SignupPage() {
                 onChange={onChange}
               />
 
-              <Button fullWidth color="primary" type="submit">
+              <Button fullWidth color="primary" type="submit" isLoading={isLoading}>
                 Sign Up
               </Button>
             </Form>

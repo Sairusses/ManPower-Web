@@ -1,3 +1,8 @@
-export const SUPABASE_URL = "https://qhfbnbdaozsokpuscmtr.supabase.co";
-export const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFoZmJuYmRhb3pzb2twdXNjbXRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwOTI4MTEsImV4cCI6MjA2MzY2ODgxMX0.jNb3_j1U5Y9pnlVhmYrUGbcbybxk2hZee7mw4PjF05c";
+// Client-side environment variables (from .env.local)
+export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
+export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+export const SITE_URL = import.meta.env.VITE_SITE_URL || window.location.origin;
+
+// Server-side environment variables (from .env)
+// These are only available server-side via process.env
+export const RESEND_API_KEY = import.meta.env.RESEND_API_KEY || "";

@@ -2,63 +2,83 @@ import { Route, Routes } from "react-router-dom";
 import { ToastProvider } from "@heroui/toast";
 
 import { AuthProvider } from "@/components/auth-provider.tsx";
-import {indexPage as IndexPage} from "@/pages/index";
+// Auth
 import LoginPage from "@/pages/auth/login.tsx";
-import { SignupPage } from "@/pages/auth/signup.tsx";
-import ClientDashboard from "@/pages/client/client-dashboard.tsx";
-import EmployeeDashboard from "@/pages/employee/employee-dashboard.tsx";
-import PostJob from "@/pages/client/jobs/post-job.tsx";
-import ClientJobsListPage from "@/pages/client/jobs/jobs-list.tsx";
-import ClientJobDetailsPage from "@/pages/client/jobs/client-jobs-details.tsx";
-import EditJobPage from "@/pages/client/jobs/edit-jobs.tsx";
-import EmployeeJobsPage from "@/pages/employee/jobs/jobs-list.tsx";
-import EmployeeJobDetailsPage from "@/pages/employee/jobs/employee-jobs-details.tsx";
-import ClientProfile from "@/pages/client/client-profile.tsx";
-import EmployeeProfile from "@/pages/employee/employee-profile.tsx";
-import EmployeeProposalsPage from "@/pages/employee/proposals/employee-proposals-list.tsx";
-import EmployeeProposalDetailsPage from "@/pages/employee/proposals/employee-proposals-details.tsx";
-import ClientProposalsList from "@/pages/client/proposals/client-proposals-list.tsx";
-import ClientProposalDetails from "@/pages/client/proposals/client-proposal-details.tsx";
+import SignupPage from "@/pages/auth/signup.tsx";
+// Public
+import IndexPage from "@/pages/index";
 import MessagesPage from "@/pages/messages/messages.tsx";
-import EmployeeContractsPage from "@/pages/employee/contracts/employee-contracts.tsx";
-import EmployeeContractDetailsPage from "@/pages/employee/contracts/employee-contract-details.tsx";
-import ClientContracts from "@/pages/client/contracts/client-contracts.tsx";
-import ClientContractDetailsPage from "@/pages/client/contracts/client-contract-details.tsx";
-/* eslint-disable */
+// Admin Pages
+import AdminLayout from "@/layouts/admin-layout.tsx";
+import AdminDashboard from "@/pages/admin/admin-dashboard.tsx";
+import AdminProfile from "@/pages/admin/admin-profile.tsx";
+import JobsList from "@/pages/admin/jobs/jobs-list.tsx";
+import PostJob from "@/pages/admin/jobs/post-job.tsx";
+import AdminJobsDetails from "@/pages/admin/jobs/admin-jobs-details.tsx";
+import EditJob from "@/pages/admin/jobs/edit-jobs.tsx";
+import AdminProposalsList from "@/pages/admin/proposals/admin-proposals-list.tsx";
+import AdminProposalDetails from "@/pages/admin/proposals/admin-proposal-details.tsx";
+import AdminContracts from "@/pages/admin/contracts/admin-contracts.tsx";
+import AdminContractDetailsPage from "@/pages/admin/contracts/admin-contract-details.tsx";
+// Applicant Pages
+import ApplicantLayout from "@/layouts/applicant-layout.tsx";
+import ApplicantDashboard from "@/pages/applicant/applicant-dashboard.tsx";
+import ApplicantProfile from "@/pages/applicant/applicant-profile.tsx";
+import ApplicantJobsPage from "@/pages/applicant/jobs/jobs-list.tsx";
+import ApplicantJobDetailsPage from "@/pages/applicant/jobs/applicant-jobs-details.tsx";
+import ApplicantProposalsList from "@/pages/applicant/proposals/applicant-proposals-list.tsx";
+import ApplicantProposalsDetails from "@/pages/applicant/proposals/applicant-proposals-details.tsx";
+import ApplicantContracts from "@/pages/applicant/contracts/applicant-contracts.tsx";
+import ApplicantContractDetails from "@/pages/applicant/contracts/applicant-contract-details.tsx";
+
 function App() {
   return (
     <AuthProvider>
       <ToastProvider />
       <Routes>
-        {/* Landing Page */}
-        <Route element={<IndexPage />} path="" />
-        {/* Authentication Pages*/}
+        {/* PUBLIC ROUTES */}
+        <Route element={<IndexPage />} path="/" />
         <Route element={<LoginPage />} path="/auth/login" />
         <Route element={<SignupPage />} path="/auth/signup" />
-        {/* Client Pages */}
-        <Route element={<ClientDashboard />} path="/client/dashboard" />
-        <Route element={<ClientProfile />} path="/client/profile" />
-        <Route element={<PostJob />} path="/client/post-job" />
-        <Route element={<ClientJobsListPage />} path="/client/jobs" />
-        <Route element={<ClientJobDetailsPage />} path="/client/jobs/details" />
-        <Route element={<EditJobPage />} path="/client/jobs/edit/:id" />
-        <Route element={<ClientProposalsList />} path="/client/proposals/" />
-        <Route element={<ClientProposalDetails />} path="/client/proposals/details" />
-        <Route element={<ClientContracts />} path="/client/contracts" />
-        <Route element={<ClientContractDetailsPage />} path="/client/contracts/details" />
-
-        {/*  Employee Pages */}
-        <Route element={<EmployeeDashboard />} path="/employee/dashboard" />
-        <Route element={<EmployeeProfile />} path="/employee/profile" />
-        <Route element={<EmployeeJobsPage />} path="/employee/jobs" />
-        <Route element={<EmployeeJobDetailsPage />} path="/employee/jobs/details" />
-        <Route element={<EmployeeProposalsPage />} path="/employee/proposals" />
-        <Route element={<EmployeeProposalDetailsPage />} path="/employee/proposals/details" />
-        <Route element={<EmployeeContractsPage />} path="/employee/contracts" />
-        <Route element={<EmployeeContractDetailsPage />} path="/employee/contracts/details" />
-
-        {/* Messages Page */}
         <Route element={<MessagesPage />} path="/messages" />
+
+        {/* ADMIN ROUTES */}
+        <Route element={<AdminLayout />} path="/admin">
+          <Route element={<AdminDashboard />} path="dashboard" />
+          <Route element={<AdminProfile />} path="profile" />
+          <Route path="jobs">
+            <Route index element={<JobsList />} />
+            <Route element={<PostJob />} path="post" />
+            <Route element={<AdminJobsDetails />} path="details" />
+            <Route element={<EditJob />} path="edit/:id" />
+          </Route>
+          <Route path="proposals">
+            <Route index element={<AdminProposalsList />} />
+            <Route element={<AdminProposalDetails />} path="details" />
+          </Route>
+          <Route path="contracts">
+            <Route index element={<AdminContracts />} />
+            <Route element={<AdminContractDetailsPage />} path="details" />
+          </Route>
+        </Route>
+
+        {/* APPLICANT ROUTES */}
+        <Route element={<ApplicantLayout />} path="/applicant">
+          <Route element={<ApplicantDashboard />} path="dashboard" />
+          <Route element={<ApplicantProfile />} path="profile" />
+          <Route path="jobs">
+            <Route index element={<ApplicantJobsPage />} />
+            <Route element={<ApplicantJobDetailsPage />} path="details" />
+          </Route>
+          <Route path="proposals">
+            <Route index element={<ApplicantProposalsList />} />
+            <Route element={<ApplicantProposalsDetails />} path="details" />
+          </Route>
+          <Route path="contracts">
+            <Route index element={<ApplicantContracts />} />
+            <Route element={<ApplicantContractDetails />} path="details" />
+          </Route>
+        </Route>
       </Routes>
     </AuthProvider>
   );

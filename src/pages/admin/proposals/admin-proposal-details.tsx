@@ -143,6 +143,16 @@ export default function AdminProposalDetails() {
 
         window.location.href = `/admin/messages?contractId=${contractData.id}`;
       } else {
+        await supabase.functions.invoke("email-notify", {
+          body: {
+            type: "proposal_rejected",
+            payload: {
+              to: proposal.applicant?.email,
+              applicantName: proposal.applicant?.full_name,
+              jobTitle: proposal.job?.title,
+            },
+          },
+        });
         window.location.href = "/admin/proposals";
       }
 

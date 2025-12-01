@@ -123,6 +123,18 @@ export default function ApplicantJobDetailsPage() {
         attachments: uploadedFiles,
       });
 
+      await supabase.functions.invoke("email-notify", {
+        body: {
+          type: "new_application",
+          payload: {
+            to: "rensarno0@gmail.com",
+            applicantName: user.user_metadata.display_name,
+            jobTitle: job?.title,
+            applicantEmail: user.email,
+          },
+        },
+      });
+
       if (error) {
         addToast({
           title: "Error",

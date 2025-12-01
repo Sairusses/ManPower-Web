@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Avatar, Button, Chip, Link, addToast } from "@heroui/react";
-import {File, MapPin, MessageSquare, Phone} from "lucide-react";
+import { File, MapPin, MessageSquare, Phone } from "lucide-react";
 
 import { getSupabaseClient } from "@/lib/supabase";
 import { Proposal } from "@/lib/types";
@@ -125,7 +125,23 @@ export default function AdminProposalDetails() {
 
         if (messageError) throw messageError;
 
-        window.location.href = `/messages?contractId=${contractData.id}`;
+        // Invoke email-notify function
+        await supabase.functions.invoke("email-notify", {
+          body: {
+            type: "proposal_accepted",
+            payload: {
+              to: proposal.applicant?.email,
+              applicantName: proposal.applicant?.full_name,
+              jobTitle: proposal.job?.title,
+              jobDescription: proposal.job?.description,
+              proposedRate: proposal.proposed_rate,
+              estimatedDuration: proposal.estimated_duration,
+              coverLetter: proposal.cover_letter,
+            },
+          },
+        });
+
+        window.location.href = `/admin/messages?contractId=${contractData.id}`;
       } else {
         window.location.href = "/admin/proposals";
       }

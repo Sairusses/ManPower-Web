@@ -1,9 +1,167 @@
-import {Button, Input, Textarea, Avatar, addToast, Chip, Link} from "@heroui/react";
+import {
+  Button,
+  Input,
+  Textarea,
+  Avatar,
+  addToast,
+  Chip,
+  Link,
+} from "@heroui/react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+
+const skillCategoryMap: Record<string, string> = {
+  // General Labor
+  "general labor": "general_labor",
+  "manual labor": "general_labor",
+  construction: "general_labor",
+  cleaning: "general_labor",
+  janitorial: "general_labor",
+  "waste collection": "general_labor",
+  farming: "general_labor",
+  gardening: "general_labor",
+  "food processing": "general_labor",
+  packaging: "general_labor",
+
+  // Skilled Trades
+  welding: "skilled_trades",
+  electrician: "skilled_trades",
+  plumbing: "skilled_trades",
+  carpentry: "skilled_trades",
+  hvac: "skilled_trades",
+  mechanic: "skilled_trades",
+  "machine operation": "skilled_trades",
+  masonry: "skilled_trades",
+  framing: "skilled_trades",
+  roofing: "skilled_trades",
+  "tile setting": "skilled_trades",
+  "building wiring": "skilled_trades",
+  automotive: "skilled_trades",
+  "heavy equipment operation": "skilled_trades",
+  "scaffolding assembly": "skilled_trades",
+  "construction painting": "skilled_trades",
+
+  // Manufacturing & Production
+  manufacturing: "manufacturing_production",
+  "assembly line": "manufacturing_production",
+  production: "manufacturing_production",
+  operations: "manufacturing_production",
+  "quality control": "manufacturing_production",
+  "machine operating": "manufacturing_production",
+  "cnc machine operation": "manufacturing_production",
+  electronics: "manufacturing_production",
+  "food manufacturing": "manufacturing_production",
+
+  // Warehouse & Logistics
+  forklift: "warehouse_logistics",
+  inventory: "warehouse_logistics",
+  "order picking": "warehouse_logistics",
+  shipping: "warehouse_logistics",
+  receiving: "warehouse_logistics",
+  "material handling": "warehouse_logistics",
+  logistics: "warehouse_logistics",
+  "supply chain management": "warehouse_logistics",
+  "warehouse management": "warehouse_logistics",
+
+  // Drivers & Delivery
+  driving: "drivers_delivery",
+  delivery: "drivers_delivery",
+  "cdl class a": "drivers_delivery",
+  "route sales": "drivers_delivery",
+  trucking: "drivers_delivery",
+  "light vehicle driving": "drivers_delivery",
+  motorcycle: "drivers_delivery",
+  "public utility vehicle operation": "drivers_delivery",
+
+  // Office & Administrative
+  excel: "office_admin",
+  word: "office_admin",
+  "data entry": "office_admin",
+  administration: "office_admin",
+  scheduling: "office_admin",
+  receptionist: "office_admin",
+  "customer service": "office_admin",
+  "project management": "office_admin",
+  "virtual assistance": "office_admin",
+  "data analysis": "office_admin",
+  "time management": "office_admin",
+  "organizational skills": "office_admin",
+  "clerical skills": "office_admin",
+
+  // Accounting & Finance
+  bookkeeping: "accounting_finance",
+  accounting: "accounting_finance",
+  finance: "accounting_finance",
+  payroll: "accounting_finance",
+  "accounts payable": "accounting_finance",
+  "accounts receivable": "accounting_finance",
+  auditing: "accounting_finance",
+  "financial analysis": "accounting_finance",
+  taxation: "accounting_finance",
+  "financial reporting": "accounting_finance",
+  budgeting: "accounting_finance",
+
+  // IT & Software Development
+  javascript: "it_software",
+  react: "it_software",
+  python: "it_software",
+  java: "it_software",
+  sql: "it_software",
+  "c++": "it_software",
+  "c#": "it_software",
+  devops: "it_software",
+  "quality assurance": "it_software",
+  networking: "it_software",
+  "cloud computing": "it_software",
+  "data science": "it_software",
+  cybersecurity: "it_software",
+  "machine learning": "it_software",
+  "ui/ux design": "it_software",
+  "mobile app development": "it_software",
+  php: "it_software",
+
+  // Engineering & Technical Roles
+  cad: "engineering_technical",
+  autocad: "engineering_technical",
+  engineering: "engineering_technical",
+  mechanical: "engineering_technical",
+  electrical: "engineering_technical",
+  civil: "engineering_technical",
+  "process improvement": "engineering_technical",
+  "industrial engineering": "engineering_technical",
+  "renewable energy": "engineering_technical",
+  architecture: "engineering_technical",
+  robotics: "engineering_technical",
+  "technical drawing interpretation": "engineering_technical",
+
+  // Other (Catch-all for skills outside the primary defined buckets, including soft skills or niche roles)
+  "communication skills": "other",
+  teamwork: "other",
+  "problem solving": "other",
+  leadership: "other",
+  "customer relations": "other", // Could also be office_admin
+  "sales skills": "other",
+  negotiation: "other",
+  bilingual: "other",
+  tagalog: "other", // Specific language skill
+  bisaya: "other", // Specific language skill
+  mandarin: "other", // Specific language skill
+  "project management methodology": "other", // More specific than the one in office_admin
+  "event planning": "other",
+  "graphic design": "other",
+  "social media management": "other",
+  nursing: "other",
+  "patient care": "other",
+  teaching: "other",
+  tutoring: "other",
+  "food service": "other",
+  bartending: "other",
+  cooking: "other",
+  housekeeping: "other",
+};
 
 export default function ApplicantProfile() {
   const [user, setUser] = useState<any>(null);
@@ -12,6 +170,8 @@ export default function ApplicantProfile() {
   const [uploading, setUploading] = useState(false);
   const [resumeUploading, setResumeUploading] = useState(false);
   const [newSkill, setNewSkill] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     fetchUser();
@@ -221,6 +381,28 @@ export default function ApplicantProfile() {
     setProfile((prev: any) => ({ ...prev, skills: updatedSkills }));
   };
 
+  useEffect(() => {
+    if (!newSkill.trim()) {
+      setSuggestions([]);
+      setShowDropdown(false);
+
+      return;
+    }
+
+    const handler = setTimeout(() => {
+      const input = newSkill.toLowerCase();
+
+      const matches = Object.keys(skillCategoryMap).filter((skill) =>
+        skill.includes(input),
+      );
+
+      setSuggestions(matches);
+      setShowDropdown(matches.length > 0);
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [newSkill]);
+
   const handleSave = async () => {
     try {
       const { error } = await supabase
@@ -372,20 +554,46 @@ export default function ApplicantProfile() {
                 onChange={(e) => handleChange("website", e.target.value)}
               />
               {/* Skills */}
-              <div className="">
+              <div className="relative">
                 <h2 className="text-sm mb-2">Skills</h2>
-                <div className="flex gap-2 mb-3">
+
+                <div className="flex gap-2 mb-1">
                   <Input
-                    placeholder="Add a skill"
+                    placeholder="Type a skill (e.g. React, Welding, Forklift)"
                     value={newSkill}
                     onChange={(e) => setNewSkill(e.target.value)}
-                    onKeyPress={(e) =>
-                      e.key === "Enter" && (e.preventDefault(), addSkill())
-                    }
+                    onFocus={() => setShowDropdown(true)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && newSkill.trim()) {
+                        e.preventDefault();
+                        addSkill();
+                        setShowDropdown(false);
+                      }
+                    }}
                   />
                   <Button onClick={addSkill}>+</Button>
                 </div>
-                <div className="flex flex-wrap gap-2">
+
+                {/* Dropdown */}
+                {showDropdown && suggestions.length > 0 && (
+                  <div className="absolute z-20 w-full bg-white border rounded-md shadow-sm max-h-40 overflow-y-auto">
+                    {suggestions.map((skill) => (
+                      <button
+                        key={skill}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
+                        onClick={() => {
+                          setNewSkill(skill);
+                          setShowDropdown(false);
+                        }}
+                      >
+                        {skill}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Skill Chips */}
+                <div className="flex flex-wrap gap-2 mt-3">
                   {profile?.skills?.map((skill: string, index: number) => (
                     <Chip key={index} onClose={() => removeSkill(skill)}>
                       {skill}

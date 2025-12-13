@@ -6,6 +6,49 @@ import { addToast } from "@heroui/toast";
 import { getSupabaseClient } from "@/lib/supabase";
 import { FileUpload } from "@/components/file-upload.tsx";
 
+const categories = [
+  {
+    key: "general_labor",
+    label: "General Labor",
+  },
+  {
+    key: "skilled_trades",
+    label: "Skilled Trades (Welder, Technician)",
+  },
+  {
+    key: "manufacturing_production",
+    label: "Manufacturing & Production",
+  },
+  {
+    key: "warehouse_logistics",
+    label: "Warehouse & Logistics",
+  },
+  {
+    key: "drivers_delivery",
+    label: "Drivers & Delivery",
+  },
+  {
+    key: "office_admin",
+    label: "Office & Administrative",
+  },
+  {
+    key: "accounting_finance",
+    label: "Accounting & Finance",
+  },
+  {
+    key: "it_software",
+    label: "IT & Software Development",
+  },
+  {
+    key: "engineering_technical",
+    label: "Engineering & Technical Roles",
+  },
+  {
+    key: "other",
+    label: "Other",
+  },
+];
+
 const durations = [
   { key: "1-4_weeks", label: "1-4 weeks" },
   { key: "1-6_months", label: "1-6 months" },
@@ -128,12 +171,17 @@ export default function EditJob() {
             onChange={(e) => setDescription(e.target.value)}
           />
 
-          <Input
+          <Select
             label="Category"
-            placeholder="Enter category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          />
+            selectedKeys={category ? [category] : []}
+            onSelectionChange={(keys) =>
+              setCategory(Array.from(keys)[0] as string)
+            }
+          >
+            {categories.map((c) => (
+              <SelectItem key={c.key}>{c.label}</SelectItem>
+            ))}
+          </Select>
 
           <Select
             label="Status"

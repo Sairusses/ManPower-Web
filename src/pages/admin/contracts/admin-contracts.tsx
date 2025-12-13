@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardHeader } from "@heroui/card";
-import { Button, Chip, Input } from "@heroui/react";
+import { Avatar, Button, Chip, Input } from "@heroui/react";
 import { Eye, FileText } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
@@ -23,7 +23,7 @@ export default function AdminContracts() {
         id,
         status,
         jobs ( title ),
-        users!contracts_employee_id_fkey ( full_name )
+        users!contracts_employee_id_fkey ( full_name, avatar_url )
       `,
       )
       .order("created_at", { ascending: false });
@@ -36,11 +36,11 @@ export default function AdminContracts() {
 
   const filteredContracts = contracts.filter((contract) => {
     const jobTitle = contract.jobs?.title?.toLowerCase() || "";
-    const employeeName = contract.users?.full_name?.toLowerCase() || "";
+    const applicantName = contract.users?.full_name?.toLowerCase() || "";
 
     return (
       jobTitle.includes(search.toLowerCase()) ||
-      employeeName.includes(search.toLowerCase())
+      applicantName.includes(search.toLowerCase())
     );
   });
 
@@ -67,7 +67,7 @@ export default function AdminContracts() {
         {/* Search Bar */}
         <Input
           className="mb-6"
-          placeholder="Search by job title or employee name..."
+          placeholder="Search by job title or applicant name..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -87,14 +87,25 @@ export default function AdminContracts() {
                 shadow="sm"
               >
                 <CardHeader className="flex justify-between items-center">
-                  <div>
-                    <h2 className="font-semibold">
-                      {contract.jobs?.title || "Untitled Job"}
-                    </h2>
-                    <p className="text-sm text-gray-500">
-                      Employee: {contract.users?.full_name}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <Avatar
+                      className="border"
+                      name={contract.users?.full_name || "User"}
+                      radius="full"
+                      size="md"
+                      src={contract.users?.avatar_url || undefined}
+                    />
+
+                    <div>
+                      <h2 className="font-semibold">
+                        {contract.jobs?.title || "Untitled Job"}
+                      </h2>
+                      <p className="text-sm text-gray-500">
+                        {contract.users?.full_name}
+                      </p>
+                    </div>
                   </div>
+
                   <div className="flex items-center gap-3">
                     <Chip
                       color={getStatusColor(contract.status)}

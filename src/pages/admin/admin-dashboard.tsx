@@ -156,7 +156,7 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardBody>
               <div className="space-y-4 flex flex-col">
-                {jobs.slice(0, 5).map((job) => (
+                {jobs.slice(0, 3).map((job) => (
                   <Card key={job.id} radius="sm" shadow="sm">
                     <CardBody>
                       <div className="flex items-center justify-between p-4 rounded-lg">
@@ -216,7 +216,7 @@ export default function AdminDashboard() {
             <CardHeader className="flex flex-col items-start justify-between">
               <div className="text-2xl font-bold">Recent Proposals</div>
               <div className="text-sm text-gray-600">
-                Latest proposals from employees
+                Latest proposals from applicants
               </div>
             </CardHeader>
             <CardBody>

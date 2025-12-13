@@ -1,7 +1,7 @@
 import type { Job } from "@/lib/types";
 
 import { useState, useEffect } from "react";
-import { Search } from "lucide-react";
+import {Eye, Search} from "lucide-react";
 import {
   addToast,
   Button,
@@ -449,55 +449,62 @@ export default function ApplicantJobsPage() {
         </div>
 
         {/* All Jobs Section */}
-        <h2 className="text-2xl font-bold mb-4">All Open Positions</h2>
+        <h2 className="text-2xl font-bold mb-4">All Jobs</h2>
         <div className="grid grid-cols-1 gap-4">
           {jobs.length > 0 ? (
-            jobs.map((job) => (
-              <Card key={job.id} className="hover:shadow-md transition-shadow">
-                <CardBody className="flex flex-col md:flex-row gap-4 p-4">
-                  <div className="flex-grow">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-bold text-lg">{job.title}</h3>
-                        <Chip
-                          className="min-w-fit"
-                          color="default"
-                          radius="sm"
-                          size="sm"
-                          variant="flat"
-                        >
-                          {job.category}
-                        </Chip>
+            jobs.map((job) => {
+              const alreadyApplied = appliedJobIds.includes(job.id);
+              return (
+                <Card
+                  key={job.id}
+                  className="hover:shadow-md transition-shadow"
+                >
+                  <CardBody className="flex flex-col md:flex-row gap-4 p-4">
+                    <div className="flex-grow">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-bold text-lg">{job.title}</h3>
+                          <Chip
+                            className="min-w-fit"
+                            color="default"
+                            radius="sm"
+                            size="sm"
+                            variant="flat"
+                          >
+                            {job.category}
+                          </Chip>
+                        </div>
+                        <div className="md:hidden font-semibold">
+                          &#8369;{job.budget_min} - &#8369;{job.budget_max}
+                        </div>
                       </div>
-                      <div className="md:hidden font-semibold">
+                      <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                        {job.description}
+                      </p>
+                    </div>
+                    <div className="flex md:flex-col justify-between items-end gap-2 md:min-w-[140px] border-t md:border-t-0 md:border-l border-gray-100 pt-3 md:pt-0 md:pl-4 mt-2 md:mt-0">
+                      <div className="hidden md:block font-bold text-lg">
                         &#8369;{job.budget_min} - &#8369;{job.budget_max}
                       </div>
+                      <div className="flex justify-end">
+                        {alreadyApplied ? (
+                          <Button disabled color="default" size="sm">
+                            Already Applied
+                          </Button>
+                        ) : (
+                          <Link href={`/applicant/jobs/details?id=${job.id}`}>
+                            <Button color="primary" size="sm">
+                              <Eye className="h-4 w-4 mr-2" />
+                              View & Apply
+                            </Button>
+                          </Link>
+                        )}
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                      {job.description}
-                    </p>
-                  </div>
-
-                  <div className="flex md:flex-col justify-between items-end gap-2 md:min-w-[140px] border-t md:border-t-0 md:border-l border-gray-100 pt-3 md:pt-0 md:pl-4 mt-2 md:mt-0">
-                    <div className="hidden md:block font-bold text-lg">
-                      &#8369;{job.budget_min} - &#8369;{job.budget_max}
-                    </div>
-                    <Link
-                      className="w-full"
-                      href={`/applicant/jobs/details?id=${job.id}`}
-                    >
-                      <Button
-                        className="w-full"
-                        color="primary"
-                        variant="ghost"
-                      >
-                        View & Apply
-                      </Button>
-                    </Link>
-                  </div>
-                </CardBody>
-              </Card>
-            ))
+                  </CardBody>
+                </Card>
+              );
+            })
           ) : (
             <div className="text-center py-10 text-gray-500">
               No jobs found matching your filters.

@@ -1,7 +1,16 @@
 import type { Job } from "@/lib/types";
 
 import { useEffect, useState } from "react";
-import { Button, Chip, Input, Textarea, addToast, Link } from "@heroui/react";
+import {
+  Button,
+  Chip,
+  Input,
+  Textarea,
+  addToast,
+  Link,
+  Select,
+  SelectItem,
+} from "@heroui/react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import {
   Clock,
@@ -32,6 +41,7 @@ export default function ApplicantJobDetailsPage() {
   const [proposedRate, setProposedRate] = useState("");
   const [estimatedDuration, setEstimatedDuration] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleRemoveAttachment = (index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
@@ -73,6 +83,7 @@ export default function ApplicantJobDetailsPage() {
 
       return;
     }
+    setIsSubmitting(true);
 
     try {
       const {
@@ -127,7 +138,7 @@ export default function ApplicantJobDetailsPage() {
         body: {
           type: "new_application",
           payload: {
-            to: "rensarno0@gmail.com",
+            to: "kurtarias123@gmail.com",
             applicantName: user.user_metadata.display_name,
             jobTitle: job?.title,
             applicantEmail: user.email,
@@ -151,6 +162,8 @@ export default function ApplicantJobDetailsPage() {
       navigate("/applicant/jobs");
     } catch (error: any) {
       throw error;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -334,14 +347,27 @@ export default function ApplicantJobDetailsPage() {
                   value={proposedRate}
                   onChange={(e) => setProposedRate(e.target.value)}
                 />
-                <Input
+                <Select
                   className="mb-4"
                   label="Estimated Duration"
                   labelPlacement="outside"
-                  placeholder="e.g. 2 weeks, 1 month"
-                  value={estimatedDuration}
-                  onChange={(e) => setEstimatedDuration(e.target.value)}
-                />
+                  placeholder="Select duration"
+                  selectedKeys={[estimatedDuration]}
+                  onSelectionChange={(keys) =>
+                    setEstimatedDuration(Array.from(keys)[0] as string)
+                  }
+                >
+                  {[
+                    "1 month",
+                    "3 months",
+                    "6 months",
+                    "1 year",
+                    "1 - 5 years",
+                    "5 years +",
+                  ].map((item) => (
+                    <SelectItem key={item}>{item}</SelectItem>
+                  ))}
+                </Select>
 
                 {/* Attachments */}
                 <div className="mb-4 w-full">
@@ -389,6 +415,8 @@ export default function ApplicantJobDetailsPage() {
 
                 <Button
                   className="bg-blue-600 text-white w-full"
+                  isDisabled={isSubmitting}
+                  isLoading={isSubmitting}
                   onClick={handleApply}
                 >
                   Submit Proposal

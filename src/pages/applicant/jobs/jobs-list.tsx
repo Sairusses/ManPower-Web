@@ -435,20 +435,16 @@ export default function ApplicantJobsPage() {
               ))}
             </div>
           ) : (
-            <Card className="bg-gray-100 border-dashed border-2 border-gray-300 shadow-none">
-              <CardBody className="text-center py-8">
-                <p className="text-gray-600 mb-2">
-                  We couldn&#39;t find specific recommendations based on your
-                  skills.
-                </p>
-                <Link
-                  className="text-primary font-medium hover:underline"
-                  href="/applicant/profile"
-                >
-                  Update your profile skills to get matches
-                </Link>
-              </CardBody>
-            </Card>
+            <div className="text-gray-600 text-sm">
+              <Link
+                className="font-medium text-primary underline"
+                href="/applicant/profile"
+              >
+                Update your profile
+              </Link>{" "}
+              or start searching for jobs to get personalised job
+              recommendations here.
+            </div>
           )}
         </div>
 

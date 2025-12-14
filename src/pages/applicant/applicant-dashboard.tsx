@@ -1,9 +1,24 @@
 import type { Job, Proposal, Contract } from "@/lib/types";
 
 import { useState, useEffect } from "react";
-import { Briefcase, FileText, CheckCircle, Search, Eye } from "lucide-react";
-import { addToast, Button, Card, CardHeader, Chip, Link } from "@heroui/react";
-import { CardBody } from "@heroui/card";
+import {
+  addToast,
+  Button,
+  Card,
+  CardHeader,
+  CardBody,
+  Chip,
+  Divider,
+  Link,
+} from "@heroui/react";
+import {
+  Briefcase,
+  FileText,
+  CheckCircle,
+  Search,
+  Eye,
+  Zap,
+} from "lucide-react";
 
 import { getSupabaseClient } from "@/lib/supabase";
 
@@ -98,212 +113,284 @@ export default function ApplicantDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50/50">
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, {user?.user_metadata?.display_name ?? "User"}
+        {/* Header and Greeting */}
+        <div className="mb-10">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+            Welcome back,{" "}
+            <span className="text-primary-600">
+              {user?.user_metadata?.display_name ?? "Freelancer"}
+            </span>
           </h1>
-          <p className="text-gray-600">
-            Find new opportunities and manage your work
+          <p className="text-lg text-gray-500 mt-1">
+            Find new opportunities and manage your contracts and proposals.
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="px-4 py-2" radius="sm" shadow="sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="text-sm font-medium">Active Contracts</div>
-              <Briefcase className="h-4 w-4 text-muted-foreground" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          <Card
+            className="p-5 bg-white border border-gray-200"
+            radius="lg"
+            shadow="sm"
+          >
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-3">
+              <div className="text-sm font-semibold text-gray-600 uppercase tracking-wider">
+                Active Contracts
+              </div>
+              <Briefcase className="h-5 w-5 text-primary" />
             </CardHeader>
-            <CardBody>
-              <div className="text-2xl font-bold">{stats.activeContracts}</div>
-              <p className="text-xs text-muted-foreground text-gray-600">
-                Currently working on
-              </p>
+            <CardBody className="p-0">
+              <div className="text-4xl font-bold text-gray-900">
+                {stats.activeContracts}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Currently working on</p>
             </CardBody>
           </Card>
 
-          <Card className="px-4 py-2" radius="sm" shadow="sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="text-sm font-medium">Pending Proposals</div>
-              <FileText className="h-4 w-4 text-muted-foreground" />
+          <Card
+            className="p-5 bg-white border border-gray-200"
+            radius="lg"
+            shadow="sm"
+          >
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-3">
+              <div className="text-sm font-semibold text-gray-600 uppercase tracking-wider">
+                Pending Proposals
+              </div>
+              <FileText className="h-5 w-5 text-primary" />
             </CardHeader>
-            <CardBody>
-              <div className="text-2xl font-bold">{stats.pendingProposals}</div>
-              <p className="text-xs text-muted-foreground text-gray-600">
+            <CardBody className="p-0">
+              <div className="text-4xl font-bold text-gray-900">
+                {stats.pendingProposals}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
                 Awaiting client response
               </p>
             </CardBody>
           </Card>
 
-          <Card className="px-4 py-2" radius="sm" shadow="sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="text-sm font-medium">Completed Jobs</div>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          <Card
+            className="p-5 bg-white border border-gray-200"
+            radius="lg"
+            shadow="sm"
+          >
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-3">
+              <div className="text-sm font-semibold text-gray-600 uppercase tracking-wider">
+                Completed Jobs
+              </div>
+              <CheckCircle className="h-5 w-5 text-primary" />
             </CardHeader>
-            <CardBody>
-              <div className="text-2xl font-bold">
+            <CardBody className="p-0">
+              <div className="text-4xl font-bold text-gray-900">
                 {stats.completedContracts}
               </div>
-              <p className="text-xs text-muted-foreground text-gray-600">
+              <p className="text-xs text-gray-500 mt-1">
                 Successfully finished
               </p>
             </CardBody>
           </Card>
         </div>
 
+        {/* Main Content: Jobs & Proposals */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Available Jobs */}
-          <Card className="px-4 py-2" radius="sm" shadow="sm">
-            <CardHeader className="flex flex-row items-center justify-between">
+          <Card className="p-0" radius="lg" shadow="md">
+            <CardHeader className="flex flex-row items-center justify-between p-6 pb-4">
               <div className="flex flex-col">
-                <div className="text-2xl font-bold">Available Jobs</div>
-                <div className="text-sm text-gray-600">
-                  Latest opportunities for you
+                <div className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-primary" /> Available Jobs
+                </div>
+                <div className="text-sm text-gray-500">
+                  Latest opportunities based on your profile
                 </div>
               </div>
               <Link href="/applicant/jobs">
+                {" "}
                 <Button
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  color="primary"
+                  endContent={<Search className="h-4 w-4" />}
                   size="sm"
                 >
-                  <Search className="h-4 w-4 mr-2" />
                   Browse All
                 </Button>
               </Link>
             </CardHeader>
-            <CardBody>
-              <div className="space-y-4 flex flex-col">
-                {jobs.slice(0, 5).map((job) => (
-                  <Card key={job.id} radius="sm" shadow="sm">
-                    <CardBody>
-                      <div className="flex items-center justify-between p-4 rounded-lg">
-                        <div className="flex-1">
-                          <h3 className="font-medium">{job.title}</h3>
-                          <p className="text-sm text-gray-600 truncate">
-                            F and R
-                          </p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Chip
-                              color={
-                                job.status === "open" ? "default" : "primary"
-                              }
-                            >
-                              {job.status}
-                            </Chip>
-                            {job.budget_min && job.budget_max && (
-                              <span className="text-sm text-gray-500">
-                                &#8369; {job.budget_min} - &#8369;{" "}
-                                {job.budget_max}
-                              </span>
+            <Divider />
+            <CardBody className="space-y-2">
+              {jobs.slice(0, 5).map((job) => (
+                <div
+                  key={job.id}
+                  className="hover:bg-gray-100 transition-colors rounded-sm px-4 py-3"
+                >
+                  {/* --- JOB ITEM STRUCTURE START --- */}
+                  <div className="flex items-start justify-between">
+                    {/* Title and Details (Flex-grow to take up space) */}
+                    <div className="flex-1 min-w-0 pr-2">
+                      <h3 className="font-semibold text-gray-800 truncate hover:text-primary transition-colors">
+                        {job.title}
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <Chip
+                          className="capitalize"
+                          color={job.status === "open" ? "success" : "default"}
+                          size="sm"
+                          variant="flat"
+                        >
+                          {job.status}
+                        </Chip>
+                        {job.budget_min && job.budget_max && (
+                          <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                            ₱{Number(job.budget_min).toLocaleString()} - ₱
+                            {Number(job.budget_max).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                      {job.required_skills &&
+                        job.required_skills.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {job.required_skills
+                              .slice(0, 3)
+                              .map((skill: string, index: number) => (
+                                <Chip
+                                  key={index}
+                                  className="text-xs text-gray-500"
+                                  size="sm"
+                                  variant="bordered"
+                                >
+                                  {skill}
+                                </Chip>
+                              ))}
+                            {job.required_skills.length > 3 && (
+                              <Chip
+                                className="text-xs text-gray-400"
+                                size="sm"
+                                variant="light"
+                              >
+                                +{job.required_skills.length - 3} more
+                              </Chip>
                             )}
                           </div>
-                          {job.required_skills &&
-                            job.required_skills.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {job.required_skills
-                                  .slice(0, 3)
-                                  .map((skill, index) => (
-                                    <Chip
-                                      key={index}
-                                      className="text-xs"
-                                      variant="bordered"
-                                    >
-                                      {skill}
-                                    </Chip>
-                                  ))}
-                              </div>
-                            )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Link href={`/applicant/jobs/details?id=${job.id}`}>
-                            <Button size="sm" variant="ghost">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
-                    </CardBody>
-                  </Card>
-                ))}
-
-                {jobs.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <Search className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>No jobs available</p>
-                    <p className="text-sm">
-                      Check back later for new opportunities
-                    </p>
+                        )}
+                    </div>
+                    <div className="self-center mt-0">
+                      {/* how to center the link button */}
+                      <Link href={`/applicant/jobs/details?id=${job.id}`}>
+                        <Button color="primary" size="sm" variant="flat">
+                          View
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
-                )}
-              </div>
+                </div>
+              ))}
+
+              {jobs.length === 0 && (
+                <div className="text-center py-10 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                  <Search className="h-10 w-10 mx-auto mb-3 text-gray-400" />
+                  <p className="font-medium text-gray-700">
+                    No available jobs found
+                  </p>
+                  <p className="text-sm">
+                    Check your profile skills or browse all jobs directly.
+                  </p>
+                </div>
+              )}
             </CardBody>
           </Card>
 
           {/* My Proposals */}
-          <Card className="px-4 py-2" radius="sm" shadow="sm">
-            <CardHeader className="flex flex-row items-center justify-between">
+          <Card className="p-0" radius="lg" shadow="md">
+            <CardHeader className="flex flex-row items-center justify-between p-6 pb-4">
               <div className="flex flex-col">
-                <div className="text-2xl font-bold">My Proposals</div>
-                <div className="text-sm text-gray-600">
-                  Track your submitted proposals
+                <div className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary" /> My Proposals
+                </div>
+                <div className="text-sm text-gray-500">
+                  Track your submitted applications
                 </div>
               </div>
+              <Link href="/applicant/proposals">
+                {" "}
+                <Button
+                  color="primary"
+                  endContent={<Eye className="h-4 w-4" />}
+                  size="sm"
+                >
+                  View All
+                </Button>
+              </Link>
             </CardHeader>
-            <CardBody>
-              <div className="space-y-4">
-                {proposals.slice(0, 5).map((proposal) => (
-                  <Card
-                    key={proposal.id}
-                    className="p-4 grid grid-cols-2 justify-between"
-                    radius="sm"
-                    shadow="sm"
-                  >
-                    <div className="flex-1">
-                      <h3 className="font-medium">{proposal.job?.title}</h3>
-                      <p className="text-sm text-gray-600">
-                        Submitted{" "}
+            <Divider />
+            <CardBody className="space-y-2">
+              {proposals.slice(0, 5).map((proposal) => (
+                <div
+                  key={proposal.id}
+                  className="hover:bg-gray-100 transition-colors rounded-sm px-4 py-3"
+                >
+                  {/* --- PROPOSAL ITEM STRUCTURE START --- */}
+                  <div className="flex items-start justify-between">
+                    {/* Title and Details (Flex-grow to take up space) */}
+                    <div className="flex-1 min-w-0 pr-2">
+                      <h3 className="font-semibold text-gray-800 truncate">
+                        {proposal.job?.title}
+                      </h3>
+                      <span className="text-sm font-medium text-gray-400">
                         {new Date(proposal.created_at).toLocaleDateString()}
-                      </p>
-                      <div className="flex items-center gap-2 mt-2">
+                      </span>
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        {/* Proposal Status Chip */}
                         <Chip
+                          className="capitalize font-semibold"
                           color={
                             proposal.status === "pending"
-                              ? "default"
+                              ? "warning"
                               : proposal.status === "accepted"
-                                ? "default"
-                                : "secondary"
+                                ? "success"
+                                : "danger"
                           }
+                          size="sm"
+                          variant="flat"
                         >
                           {proposal.status}
                         </Chip>
+
                         {proposal.proposed_rate && (
-                          <span className="text-sm text-gray-500">
-                            ₱ {proposal.proposed_rate} / hour
+                          <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                            ₱{Number(proposal.proposed_rate).toLocaleString()}
                           </span>
                         )}
                       </div>
                     </div>
-                    <Link className="justify-end" href="/applicant/proposals">
-                      <Button size="sm" variant="ghost">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </Card>
-                ))}
-                {proposals.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>No proposals yet</p>
-                    <Link href="/applicant/jobs">
-                      <Button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white">
-                        Browse Jobs
-                      </Button>
-                    </Link>
+                    <div className="self-center mt-0">
+                      <Link href={`/applicant/proposals/details?id=${proposal.id}`}>
+                        <Button color="primary" size="sm" variant="flat">
+                          View
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
-                )}
-              </div>
+                  {/* --- PROPOSAL ITEM STRUCTURE END --- */}
+                </div>
+              ))}
+
+              {proposals.length === 0 && (
+                <div className="text-center py-10 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                  <FileText className="h-10 w-10 mx-auto mb-3 text-gray-400" />
+                  <p className="font-medium text-gray-700">
+                    You haven&#39;t submitted any proposals yet
+                  </p>
+                  <Link href="/applicant/jobs">
+                    <Button
+                      className="mt-4 font-semibold"
+                      color="primary"
+                      variant="shadow"
+                    >
+                      Browse Jobs
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </CardBody>
           </Card>
         </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardBody } from "@heroui/card";
-import { Input, Button, Chip, Avatar, Link } from "@heroui/react";
+import { Input, Button, Chip, Avatar, Link, Divider } from "@heroui/react";
 import { Eye } from "lucide-react";
 
 import { getSupabaseClient } from "@/lib/supabase";
@@ -21,6 +21,7 @@ export default function ApplicantContracts() {
 
       if (!user) {
         setLoading(false);
+
         return;
       }
 
@@ -72,54 +73,61 @@ export default function ApplicantContracts() {
           />
         </div>
 
+        <Divider />
+
         <Card radius="sm" shadow="sm">
-          <CardBody className="divide-y">
+          <CardBody className="">
             {loading ? (
               <div className="p-10 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600" />
+                <div className="animate-spin rounded-full h-32 w-32" />
               </div>
             ) : filteredContracts.length > 0 ? (
-              filteredContracts.map((contract) => (
-                <div
-                  key={contract.id}
-                  className="flex items-center justify-between py-3"
-                >
-                  <div className="flex items-center gap-4">
-                    <Avatar
-                      name={admin?.full_name || "Admin"}
-                      size="sm"
-                      src={admin?.avatar_url || ""}
-                    />
-                    <div>
-                      <p className="font-medium">{contract.jobs?.title}</p>
-                      <p className="text-sm text-gray-600">
-                        {admin?.full_name} •{" "}
-                        {admin?.company_name || "Platform Admin"}
-                      </p>
+              filteredContracts.map((contract, index) => (
+                <div key={contract.id} className="grid grid-cols-1">
+                  <div className="flex items-center justify-between py-3">
+                    <div className="flex items-center gap-4">
+                      <Avatar
+                        name={admin?.full_name || "Admin"}
+                        size="sm"
+                        src={admin?.avatar_url || ""}
+                      />
+                      <div>
+                        <p className="font-medium">{contract.jobs?.title}</p>
+                        <p className="text-sm text-gray-600">
+                          {admin?.full_name} •{" "}
+                          {admin?.company_name || "Platform Admin"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Chip
+                        color={
+                          contract.status === "active"
+                            ? "primary"
+                            : contract.status === "completed"
+                              ? "success"
+                              : "warning"
+                        }
+                        size="sm"
+                        radius="sm"
+                        variant="flat"
+                      >
+                        {contract.status}
+                      </Chip>
+                      <Link
+                        href={`/applicant/contracts/details?id=${contract.id}`}
+                      >
+                        <Button
+                          color="primary"
+                          size="sm"
+                          startContent={<Eye />}
+                        >
+                          View
+                        </Button>
+                      </Link>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Chip
-                      color={
-                        contract.status === "active"
-                          ? "success"
-                          : contract.status === "completed"
-                            ? "secondary"
-                            : "warning"
-                      }
-                      size="sm"
-                      variant="flat"
-                    >
-                      {contract.status}
-                    </Chip>
-                    <Link
-                      href={`/applicant/contracts/details?id=${contract.id}`}
-                    >
-                      <Button color="primary" size="sm" startContent={<Eye />}>
-                        View
-                      </Button>
-                    </Link>
-                  </div>
+                  {index !== filteredContracts.length - 1 && <Divider />}
                 </div>
               ))
             ) : (

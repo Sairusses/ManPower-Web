@@ -87,11 +87,12 @@ export default function ApplicantContractDetails() {
               <Chip
                 color={
                   contract.status === "active"
-                    ? "success"
+                    ? "primary"
                     : contract.status === "completed"
-                      ? "secondary"
+                      ? "success"
                       : "warning"
                 }
+                radius="sm"
                 size="sm"
                 variant="flat"
               >

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Avatar, Button, Input, Chip } from "@heroui/react";
-import { Send } from "lucide-react";
+import { Send, ChevronLeft } from "lucide-react"; // Added ChevronLeft
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 import { getSupabaseClient } from "@/lib/supabase";
@@ -20,8 +20,6 @@ export default function MessagesPage() {
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
 
   const selectedConversationRef = useRef<any>(null);
-
-  // CHANGED: Use a ref for the CONTAINER, not the end element
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
   const [newMessage, setNewMessage] = useState("");
@@ -104,6 +102,8 @@ export default function MessagesPage() {
       );
 
     if (found) setSelectedConversation(found);
+    // If no ID in params, ensure we don't have a selection (important for mobile back nav)
+    else setSelectedConversation(null);
   }, [params, conversations]);
 
   useEffect(() => {
@@ -168,12 +168,10 @@ export default function MessagesPage() {
     };
   }, [supabase]);
 
-  // CHANGED: Scroll logic targeted specifically at the container
   useEffect(() => {
     if (chatContainerRef.current) {
       const { scrollHeight, clientHeight } = chatContainerRef.current;
 
-      // Scroll to the bottom of the container
       chatContainerRef.current.scrollTo({
         top: scrollHeight - clientHeight,
         behavior: "smooth",
@@ -237,14 +235,29 @@ export default function MessagesPage() {
     setSelectedConversation(item);
   };
 
+  const handleBack = () => {
+    setSelectedConversation(null);
+    const basePath = window.location.pathname.startsWith("/admin")
+      ? "/admin/messages"
+      : "/applicant/messages";
+
+    navigate(basePath);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-4 px-4">
+      <div className="max-w-7xl mx-auto py-4 px-4 h-[calc(100vh-20px)] lg:h-auto">
         <h1 className="text-3xl font-bold mb-4">Messages</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[550px]">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100%-60px)] md:h-[400px] lg:h-[550px]">
           {/* SIDEBAR */}
-          <Card className="lg:col-span-1" radius="sm" shadow="sm">
+          <Card
+            className={`lg:col-span-1 h-full ${
+              selectedConversation ? "hidden lg:block" : "block"
+            }`}
+            radius="sm"
+            shadow="sm"
+          >
             <CardHeader>
               <strong className="px-4 text-lg">Conversations</strong>
             </CardHeader>
@@ -273,10 +286,13 @@ export default function MessagesPage() {
                         name={other?.full_name || "User"}
                         src={other?.avatar_url || ""}
                       />
-                      <div className="flex flex-col w-full">
+                      <div className="flex flex-col w-full overflow-hidden">
                         <div className="flex items-center justify-between">
-                          <p className="font-medium">{other?.full_name}</p>
+                          <p className="font-medium truncate">
+                            {other?.full_name}
+                          </p>
                           <Chip
+                            className="ml-2"
                             color={
                               item.type === "contract" ? "success" : "primary"
                             }
@@ -286,7 +302,7 @@ export default function MessagesPage() {
                             {item.type}
                           </Chip>
                         </div>
-                        <p className="text-sm text-gray-600 truncate max-w-[200px]">
+                        <p className="text-sm text-gray-600 truncate">
                           {latestMessage}
                         </p>
                       </div>
@@ -297,16 +313,36 @@ export default function MessagesPage() {
             </CardBody>
           </Card>
 
-          {/* CHAT */}
-          <Card className="lg:col-span-3 flex flex-col" radius="sm" shadow="sm">
+          {/* CHAT AREA */}
+          <Card
+            className={`lg:col-span-3 h-full flex flex-col ${
+              selectedConversation ? "flex" : "hidden lg:flex"
+            }`}
+            radius="sm"
+            shadow="sm"
+          >
             {selectedConversation ? (
               <>
-                <CardHeader className="px-6 border-b border-gray-200 flex items-center justify-between">
-                  <strong>
-                    {userProfile?.role === "admin"
-                      ? selectedConversation.applicant?.full_name
-                      : adminProfile?.full_name}
-                  </strong>
+                <CardHeader className="px-4 py-3 border-b border-gray-200 flex items-center justify-between shrink-0">
+                  <div className="flex items-center gap-3">
+                    <Button
+                      isIconOnly
+                      className="lg:hidden -ml-2"
+                      variant="light"
+                      onPress={handleBack}
+                    >
+                      <ChevronLeft />
+                    </Button>
+
+                    <div className="flex flex-col">
+                      <strong className="text-sm md:text-base">
+                        {userProfile?.role === "admin"
+                          ? selectedConversation.applicant?.full_name
+                          : adminProfile?.full_name}
+                      </strong>
+                    </div>
+                  </div>
+
                   <Chip
                     color={
                       selectedConversation.type === "contract"
@@ -320,11 +356,10 @@ export default function MessagesPage() {
                   </Chip>
                 </CardHeader>
 
-                <CardBody className="flex flex-col p-0">
-                  {/* CHANGED: Attach ref to the scrollable container */}
+                <CardBody className="flex-1 flex flex-col p-0 overflow-hidden">
                   <div
                     ref={chatContainerRef}
-                    className="flex-1 overflow-y-auto p-4 space-y-3"
+                    className="flex-1 w-full overflow-y-auto p-4 space-y-3"
                   >
                     {messages.map((msg) => {
                       const isOwn = msg.sender_id === userProfile?.id;
@@ -335,31 +370,36 @@ export default function MessagesPage() {
                           className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                         >
                           <div
-                            className={`px-4 py-2 rounded-lg max-w-xs ${isOwn ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-900"}`}
+                            className={`px-4 py-2 rounded-lg max-w-[85%] md:max-w-xs break-words ${
+                              isOwn
+                                ? "bg-blue-600 text-white"
+                                : "bg-gray-100 text-gray-900"
+                            }`}
                           >
                             {msg.content}
                           </div>
                         </div>
                       );
                     })}
-                    {/* Removed the empty messagesEndRef div */}
                   </div>
 
                   <form
-                    className="p-4 border-t border-gray-200 flex gap-2"
+                    className="p-3 md:p-4 border-t border-gray-200 flex gap-2 bg-white shrink-0"
                     onSubmit={sendMessage}
                   >
                     <Input
+                      className="flex-1"
                       placeholder="Type a message..."
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                     />
                     <Button
+                      isIconOnly
                       color="primary"
                       isDisabled={!newMessage.trim()}
                       type="submit"
                     >
-                      <Send size={16} />
+                      <Send size={18} />
                     </Button>
                   </form>
                 </CardBody>

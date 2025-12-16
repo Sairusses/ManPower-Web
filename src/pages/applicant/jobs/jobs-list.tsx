@@ -28,7 +28,7 @@ const categories = [
   { key: "warehouse_logistics", label: "Warehouse & Logistics" },
   { key: "drivers_delivery", label: "Drivers & Delivery" },
   { key: "office_admin", label: "Office & Administrative" },
-  { key: "accounting_finance", label: "Accounting & Finance" },
+  { key: "accounting finance", label: "Accounting & Finance" },
   { key: "it_software", label: "IT & Software Development" },
   { key: "engineering_technical", label: "Engineering & Technical Roles" },
   { key: "other", label: "Other" },
@@ -114,17 +114,17 @@ const skillCategoryMap: Record<string, string> = {
   "clerical skills": "office_admin",
 
   // Accounting -> "accounting_finance"
-  bookkeeping: "accounting_finance",
-  accounting: "accounting_finance",
-  finance: "accounting_finance",
-  payroll: "accounting_finance",
-  "accounts payable": "accounting_finance",
-  "accounts receivable": "accounting_finance",
-  auditing: "accounting_finance",
-  "financial analysis": "accounting_finance",
-  taxation: "accounting_finance",
-  "financial reporting": "accounting_finance",
-  budgeting: "accounting_finance",
+  bookkeeping: "accounting finance",
+  accounting: "accounting finance",
+  finance: "accounting finance",
+  payroll: "accounting finance",
+  "accounts payable": "accounting finance",
+  "accounts receivable": "accounting finance",
+  auditing: "accounting finance",
+  "financial analysis": "accounting finance",
+  taxation: "accounting finance",
+  "financial reporting": "accounting finance",
+  budgeting: "accounting finance",
 
   // IT -> "it_software"
   javascript: "it_software",
@@ -159,17 +159,30 @@ const skillCategoryMap: Record<string, string> = {
   robotics: "engineering_technical",
   "technical drawing interpretation": "engineering_technical",
 
-  // Other -> "other"
+  // Other (Catch-all for skills outside the primary defined buckets, including soft skills or niche roles)
   "communication skills": "other",
   teamwork: "other",
   "problem solving": "other",
   leadership: "other",
+  "customer relations": "other", // Could also be office_admin
   "sales skills": "other",
   negotiation: "other",
   bilingual: "other",
-  tagalog: "other",
-  bisaya: "other",
-  mandarin: "other",
+  tagalog: "other", // Specific language skill
+  bisaya: "other", // Specific language skill
+  mandarin: "other", // Specific language skill
+  "project management methodology": "other", // More specific than the one in office_admin
+  "event planning": "other",
+  "graphic design": "other",
+  "social media management": "other",
+  nursing: "other",
+  "patient care": "other",
+  teaching: "other",
+  tutoring: "other",
+  "food service": "other",
+  bartending: "other",
+  cooking: "other",
+  housekeeping: "other",
 };
 
 const normalize = (v: string) => v.trim().toLowerCase();
@@ -532,7 +545,7 @@ export default function ApplicantJobsPage() {
                             <div className="flex flex-wrap gap-2 mb-3">
                               <Chip
                                 className="border-none pl-0"
-                                color="secondary"
+                                color="primary"
                                 size="sm"
                                 variant="dot"
                               >

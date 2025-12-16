@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 
 import { getSupabaseClient } from "@/lib/supabase";
+import Footer from "@/components/footer.tsx";
 
 // --- Static Data ---
 const categories = [
@@ -434,6 +435,7 @@ export default function Index() {
           )}
         </section>
       </div>
+      <Footer />
     </div>
   );
 }

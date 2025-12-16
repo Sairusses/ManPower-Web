@@ -20,132 +20,146 @@ import { Search, Filter, Sparkles, Briefcase } from "lucide-react";
 
 import { getSupabaseClient } from "@/lib/supabase";
 
-// --- Mappings (Kept same as provided) ---
+// --- 1. UPDATED CATEGORIES (Matches your "Add Job" keys) ---
+const categories = [
+  { key: "general_labor", label: "General Labor" },
+  { key: "skilled_trades", label: "Skilled Trades" },
+  { key: "manufacturing_production", label: "Manufacturing & Production" },
+  { key: "warehouse_logistics", label: "Warehouse & Logistics" },
+  { key: "drivers_delivery", label: "Drivers & Delivery" },
+  { key: "office_admin", label: "Office & Administrative" },
+  { key: "accounting_finance", label: "Accounting & Finance" },
+  { key: "it_software", label: "IT & Software Development" },
+  { key: "engineering_technical", label: "Engineering & Technical Roles" },
+  { key: "other", label: "Other" },
+];
+
+// --- 2. UPDATED MAPPINGS (Values now match the keys above) ---
 const skillCategoryMap: Record<string, string> = {
-  // General Labor
-  "general labor": "general labor",
-  "manual labor": "general labor",
-  construction: "general labor",
-  cleaning: "general labor",
-  janitorial: "general labor",
-  "waste collection": "general labor",
-  farming: "general labor",
-  gardening: "general labor",
-  "food processing": "general labor",
-  packaging: "general labor",
+  // General Labor -> "general_labor"
+  "general labor": "general_labor",
+  "manual labor": "general_labor",
+  construction: "general_labor",
+  cleaning: "general_labor",
+  janitorial: "general_labor",
+  "waste collection": "general_labor",
+  farming: "general_labor",
+  gardening: "general_labor",
+  "food processing": "general_labor",
+  packaging: "general_labor",
 
-  // Skilled Trades
-  welding: "skilled trades",
-  electrician: "skilled trades",
-  plumbing: "skilled trades",
-  carpentry: "skilled trades",
-  hvac: "skilled trades",
-  mechanic: "skilled trades",
-  "machine operation": "skilled trades",
-  masonry: "skilled trades",
-  framing: "skilled trades",
-  roofing: "skilled trades",
-  "tile setting": "skilled trades",
-  "building wiring": "skilled trades",
-  automotive: "skilled trades",
-  "heavy equipment operation": "skilled trades",
-  "scaffolding assembly": "skilled trades",
-  "construction painting": "skilled trades",
+  // Skilled Trades -> "skilled_trades"
+  welding: "skilled_trades",
+  electrician: "skilled_trades",
+  plumbing: "skilled_trades",
+  carpentry: "skilled_trades",
+  hvac: "skilled_trades",
+  mechanic: "skilled_trades",
+  "machine operation": "skilled_trades",
+  masonry: "skilled_trades",
+  framing: "skilled_trades",
+  roofing: "skilled_trades",
+  "tile setting": "skilled_trades",
+  "building wiring": "skilled_trades",
+  automotive: "skilled_trades",
+  "heavy equipment operation": "skilled_trades",
+  "scaffolding assembly": "skilled_trades",
+  "construction painting": "skilled_trades",
 
-  // Manufacturing & Production
-  manufacturing: "manufacturing production",
-  "assembly line": "manufacturing production",
-  production: "manufacturing production",
-  operations: "manufacturing production",
-  "quality control": "manufacturing production",
-  "machine operating": "manufacturing production",
-  "cnc machine operation": "manufacturing production",
-  electronics: "manufacturing production",
-  "food manufacturing": "manufacturing production",
+  // Manufacturing -> "manufacturing_production"
+  manufacturing: "manufacturing_production",
+  "assembly line": "manufacturing_production",
+  production: "manufacturing_production",
+  operations: "manufacturing_production",
+  "quality control": "manufacturing_production",
+  "machine operating": "manufacturing_production",
+  "cnc machine operation": "manufacturing_production",
+  electronics: "manufacturing_production",
+  "food manufacturing": "manufacturing_production",
 
-  // Warehouse & Logistics
-  forklift: "warehouse logistics",
-  inventory: "warehouse logistics",
-  "order picking": "warehouse logistics",
-  shipping: "warehouse logistics",
-  receiving: "warehouse logistics",
-  "material handling": "warehouse logistics",
-  logistics: "warehouse logistics",
-  "supply chain management": "warehouse logistics",
-  "warehouse management": "warehouse logistics",
+  // Warehouse -> "warehouse_logistics"
+  forklift: "warehouse_logistics",
+  inventory: "warehouse_logistics",
+  "order picking": "warehouse_logistics",
+  shipping: "warehouse_logistics",
+  receiving: "warehouse_logistics",
+  "material handling": "warehouse_logistics",
+  logistics: "warehouse_logistics",
+  "supply chain management": "warehouse_logistics",
+  "warehouse management": "warehouse_logistics",
 
-  // Drivers & Delivery
-  driving: "drivers delivery",
-  delivery: "drivers delivery",
-  "cdl class a": "drivers delivery",
-  "route sales": "drivers delivery",
-  trucking: "drivers delivery",
-  "light vehicle driving": "drivers delivery",
-  motorcycle: "drivers delivery",
-  "public utility vehicle operation": "drivers delivery",
+  // Drivers -> "drivers_delivery"
+  driving: "drivers_delivery",
+  delivery: "drivers_delivery",
+  "cdl class a": "drivers_delivery",
+  "route sales": "drivers_delivery",
+  trucking: "drivers_delivery",
+  "light vehicle driving": "drivers_delivery",
+  motorcycle: "drivers_delivery",
+  "public utility vehicle operation": "drivers_delivery",
 
-  // Office & Administrative
-  excel: "office administrative",
-  word: "office administrative",
-  "data entry": "office administrative",
-  administration: "office administrative",
-  scheduling: "office administrative",
-  receptionist: "office administrative",
-  "customer service": "office administrative",
-  "project management": "office administrative",
-  "virtual assistance": "office administrative",
-  "data analysis": "office administrative",
-  "time management": "office administrative",
-  "organizational skills": "office administrative",
-  "clerical skills": "office administrative",
+  // Office -> "office_admin"
+  excel: "office_admin",
+  word: "office_admin",
+  "data entry": "office_admin",
+  administration: "office_admin",
+  scheduling: "office_admin",
+  receptionist: "office_admin",
+  "customer service": "office_admin",
+  "project management": "office_admin",
+  "virtual assistance": "office_admin",
+  "data analysis": "office_admin",
+  "time management": "office_admin",
+  "organizational skills": "office_admin",
+  "clerical skills": "office_admin",
 
-  // Accounting & Finance
-  bookkeeping: "accounting finance",
-  accounting: "accounting finance",
-  finance: "accounting finance",
-  payroll: "accounting finance",
-  "accounts payable": "accounting finance",
-  "accounts receivable": "accounting finance",
-  auditing: "accounting finance",
-  "financial analysis": "accounting finance",
-  taxation: "accounting finance",
-  "financial reporting": "accounting finance",
-  budgeting: "accounting finance",
+  // Accounting -> "accounting_finance"
+  bookkeeping: "accounting_finance",
+  accounting: "accounting_finance",
+  finance: "accounting_finance",
+  payroll: "accounting_finance",
+  "accounts payable": "accounting_finance",
+  "accounts receivable": "accounting_finance",
+  auditing: "accounting_finance",
+  "financial analysis": "accounting_finance",
+  taxation: "accounting_finance",
+  "financial reporting": "accounting_finance",
+  budgeting: "accounting_finance",
 
-  // IT & Software Development
-  javascript: "it software development",
-  react: "it software development",
-  python: "it software development",
-  java: "it software development",
-  sql: "it software development",
-  "c++": "it software development",
-  "c#": "it software development",
-  devops: "it software development",
-  "quality assurance": "it software development",
-  networking: "it software development",
-  "cloud computing": "it software development",
-  "data science": "it software development",
-  cybersecurity: "it software development",
-  "machine learning": "it software development",
-  "ui/ux design": "it software development",
-  "mobile app development": "it software development",
-  php: "it software development",
+  // IT -> "it_software"
+  javascript: "it_software",
+  react: "it_software",
+  python: "it_software",
+  java: "it_software",
+  sql: "it_software",
+  "c++": "it_software",
+  "c#": "it_software",
+  devops: "it_software",
+  "quality assurance": "it_software",
+  networking: "it_software",
+  "cloud computing": "it_software",
+  "data science": "it_software",
+  cybersecurity: "it_software",
+  "machine learning": "it_software",
+  "ui/ux design": "it_software",
+  "mobile app development": "it_software",
+  php: "it_software",
 
-  // Engineering & Technical
-  cad: "engineering technical",
-  autocad: "engineering technical",
-  engineering: "engineering technical",
-  mechanical: "engineering technical",
-  electrical: "engineering technical",
-  civil: "engineering technical",
-  "process improvement": "engineering technical",
-  "industrial engineering": "engineering technical",
-  "renewable energy": "engineering technical",
-  architecture: "engineering technical",
-  robotics: "engineering technical",
-  "technical drawing interpretation": "engineering technical",
+  // Engineering -> "engineering_technical"
+  cad: "engineering_technical",
+  autocad: "engineering_technical",
+  engineering: "engineering_technical",
+  mechanical: "engineering_technical",
+  electrical: "engineering_technical",
+  civil: "engineering_technical",
+  "process improvement": "engineering_technical",
+  "industrial engineering": "engineering_technical",
+  "renewable energy": "engineering_technical",
+  architecture: "engineering_technical",
+  robotics: "engineering_technical",
+  "technical drawing interpretation": "engineering_technical",
 
-  // Other
+  // Other -> "other"
   "communication skills": "other",
   teamwork: "other",
   "problem solving": "other",
@@ -157,19 +171,6 @@ const skillCategoryMap: Record<string, string> = {
   bisaya: "other",
   mandarin: "other",
 };
-
-const categories = [
-  { key: "general labor", label: "General Labor" },
-  { key: "skilled trades", label: "Skilled Trades" },
-  { key: "manufacturing production", label: "Manufacturing & Production" },
-  { key: "warehouse logistics", label: "Warehouse & Logistics" },
-  { key: "drivers delivery", label: "Drivers & Delivery" },
-  { key: "office administrative", label: "Office & Administrative" },
-  { key: "accounting finance", label: "Accounting & Finance" },
-  { key: "it software development", label: "IT & Software Development" },
-  { key: "engineering technical", label: "Engineering & Technical Roles" },
-  { key: "other", label: "Other" },
-];
 
 const normalize = (v: string) => v.trim().toLowerCase();
 
@@ -219,10 +220,9 @@ export default function ApplicantJobsPage() {
     fetchUser();
   }, []);
 
-  // 2. Fetch Applied Jobs (Proposals + Contracts)
+  // 2. Fetch Applied Jobs
   useEffect(() => {
     if (!user) return;
-
     const fetchApplications = async () => {
       const { data: proposals } = await supabase
         .from("proposals")
@@ -239,23 +239,19 @@ export default function ApplicantJobsPage() {
         ...(contracts?.map((c) => c.job_id) || []),
       ];
 
-      // Use Set to remove duplicates
       setAppliedJobIds([...new Set(appliedIds)]);
     };
 
     fetchApplications();
   }, [user]);
 
-  // 3. Fetch Recommended Jobs (The Fix)
+  // 3. Fetch Recommended Jobs
   useEffect(() => {
-    // Only run if we have a user and have finished loading applied IDs (to avoid flash of applied jobs)
     if (!user) return;
 
     const fetchRecommended = async () => {
       setLoadingRecommended(true);
-
       try {
-        // A. Get User Skills from Public Profile
         const { data: profile, error: profileError } = await supabase
           .from("users")
           .select("skills")
@@ -269,7 +265,7 @@ export default function ApplicantJobsPage() {
           return;
         }
 
-        // B. Map Skills to Categories
+        // Now returns snake_case keys (e.g., "it_software")
         const matchedCategories = getCategoriesFromSkills(profile.skills);
 
         if (matchedCategories.length === 0) {
@@ -279,20 +275,17 @@ export default function ApplicantJobsPage() {
           return;
         }
 
-        // C. Fetch Jobs in those categories
+        // Query matches DB keys exactly
         const { data: jobsData, error: jobsError } = await supabase
           .from("jobs")
           .select("*")
           .eq("status", "open")
           .in("category", matchedCategories)
           .order("created_at", { ascending: false })
-          .limit(10); // Limit to top 10 recommended
+          .limit(10);
 
         if (jobsError) throw jobsError;
 
-        // D. Filter out jobs the user has already applied to
-        // Note: We do NOT filter against the main 'jobs' list here.
-        // Recommended jobs should appear even if they are in the 'Browse' list.
         const filteredRecommendations =
           jobsData?.filter((job) => !appliedJobIds.includes(job.id)) || [];
 
@@ -305,9 +298,9 @@ export default function ApplicantJobsPage() {
     };
 
     fetchRecommended();
-  }, [user, appliedJobIds]); // Dependency on appliedJobIds ensures list updates if user applies
+  }, [user, appliedJobIds]);
 
-  // 4. Fetch All/Filtered Jobs
+  // 4. Fetch All Jobs
   useEffect(() => {
     const fetchJobs = async () => {
       let query = supabase
@@ -331,11 +324,10 @@ export default function ApplicantJobsPage() {
     };
 
     fetchJobs();
-  }, [searchTerm, categoryFilter, minBudget, maxBudget]); // Removed 'user' dependency as public jobs don't strictly depend on user ID
+  }, [searchTerm, categoryFilter, minBudget, maxBudget]);
 
   return (
     <div className="min-h-screen bg-gray-50/50">
-      {/* Header Section */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
@@ -345,70 +337,71 @@ export default function ApplicantJobsPage() {
             Find the perfect project that matches your skills.
           </p>
 
-          {/* Filters Grid */}
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4">
-            {/* Search - Spans 4 columns on large screens */}
             <div className="lg:col-span-4">
               <Input
                 classNames={{
-                  inputWrapper: "bg-gray-100 data-[hover=true]:bg-gray-200 group-data-[focus=true]:bg-white",
+                  inputWrapper:
+                    "bg-gray-100 data-[hover=true]:bg-gray-200 group-data-[focus=true]:bg-white",
                 }}
-                placeholder="Search jobs by title or keyword..."
+                placeholder="Search jobs..."
+                radius="sm"
+                size="lg"
                 startContent={<Search className="w-4 h-4 text-gray-500" />}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                size="lg"
-                radius="sm"
               />
             </div>
-
-            {/* Category - Spans 3 columns */}
             <div className="lg:col-span-3">
               <Select
-                items={categories}
-                placeholder="All Categories"
-                selectedKeys={categoryFilter ? [categoryFilter] : []}
-                startContent={<Briefcase className="w-4 h-4 text-gray-500" />}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                size="lg"
-                radius="sm"
                 classNames={{
                   trigger: "bg-gray-100 data-[hover=true]:bg-gray-200",
                 }}
+                items={categories}
+                placeholder="All Categories"
+                radius="sm"
+                selectedKeys={categoryFilter ? [categoryFilter] : []}
+                size="lg"
+                startContent={<Briefcase className="w-4 h-4 text-gray-500" />}
+                onChange={(e) => setCategoryFilter(e.target.value)}
               >
                 {(item) => <SelectItem key={item.key}>{item.label}</SelectItem>}
               </Select>
             </div>
-
-            {/* Budget Inputs - Spans 5 columns (grouped visually) */}
             <div className="lg:col-span-5 flex gap-2">
               <div className="flex-1">
                 <Input
+                  classNames={{
+                    inputWrapper:
+                      "bg-gray-100 data-[hover=true]:bg-gray-200 group-data-[focus=true]:bg-white",
+                  }}
                   placeholder="Min Budget"
-                  startContent={<span className="text-small text-gray-500">₱</span>}
+                  radius="sm"
+                  size="lg"
+                  startContent={
+                    <span className="text-small text-gray-500">₱</span>
+                  }
                   type="number"
                   value={minBudget}
                   onChange={(e) => setMinBudget(e.target.value)}
-                  size="lg"
-                  radius="sm"
-                  classNames={{
-                    inputWrapper: "bg-gray-100 data-[hover=true]:bg-gray-200 group-data-[focus=true]:bg-white",
-                  }}
                 />
               </div>
               <div className="flex items-center text-gray-400">-</div>
               <div className="flex-1">
                 <Input
+                  classNames={{
+                    inputWrapper:
+                      "bg-gray-100 data-[hover=true]:bg-gray-200 group-data-[focus=true]:bg-white",
+                  }}
                   placeholder="Max Budget"
-                  startContent={<span className="text-small text-gray-500">₱</span>}
+                  radius="sm"
+                  size="lg"
+                  startContent={
+                    <span className="text-small text-gray-500">₱</span>
+                  }
                   type="number"
                   value={maxBudget}
                   onChange={(e) => setMaxBudget(e.target.value)}
-                  size="lg"
-                  radius="sm"
-                  classNames={{
-                    inputWrapper: "bg-gray-100 data-[hover=true]:bg-gray-200 group-data-[focus=true]:bg-white",
-                  }}
                 />
               </div>
             </div>
@@ -428,8 +421,10 @@ export default function ApplicantJobsPage() {
 
           {loadingRecommended ? (
             <div className="w-full flex flex-col items-center justify-center py-12 bg-white rounded-xl border border-gray-100 border-dashed">
-              <Spinner size="lg" color="primary" />
-              <p className="text-gray-500 mt-4 text-sm">Curating jobs based on your profile...</p>
+              <Spinner color="primary" size="lg" />
+              <p className="text-gray-500 mt-4 text-sm">
+                Curating jobs based on your profile...
+              </p>
             </div>
           ) : recommendedJobs.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -453,13 +448,20 @@ export default function ApplicantJobsPage() {
                   </CardBody>
                   <CardFooter className="flex justify-between items-center pt-4">
                     <div className="flex flex-col">
-                      <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">Budget</span>
+                      <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">
+                        Budget
+                      </span>
                       <span className="font-bold text-blue-900 text-lg">
                         ₱{job.budget_min} - ₱{job.budget_max}
                       </span>
                     </div>
                     <Link href={`/applicant/jobs/details?id=${job.id}`}>
-                      <Button color="primary" variant="shadow" size="sm" className="font-medium">
+                      <Button
+                        className="font-medium"
+                        color="primary"
+                        size="sm"
+                        variant="shadow"
+                      >
                         View Job
                       </Button>
                     </Link>
@@ -471,10 +473,13 @@ export default function ApplicantJobsPage() {
             <Card className="bg-gray-50 border-dashed border-2 border-gray-200 shadow-none">
               <CardBody className="py-8 text-center">
                 <p className="text-gray-600">
-                  <Link href="/applicant/profile" className="text-primary font-medium hover:underline">
+                  <Link
+                    className="text-primary font-medium hover:underline"
+                    href="/applicant/profile"
+                  >
                     Complete your profile
-                  </Link>
-                  {" "}to unlock recommendations matching your skills.
+                  </Link>{" "}
+                  to unlock recommendations matching your skills.
                 </p>
               </CardBody>
             </Card>
@@ -486,7 +491,9 @@ export default function ApplicantJobsPage() {
         {/* All Jobs Section */}
         <section>
           <div className="flex justify-between items-end mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Latest Opportunities</h2>
+            <h2 className="text-2xl font-bold text-gray-800">
+              Latest Opportunities
+            </h2>
             <span className="text-sm text-gray-500 hidden sm:block">
               Showing {jobs.length} results
             </span>
@@ -496,6 +503,10 @@ export default function ApplicantJobsPage() {
             {jobs.length > 0 ? (
               jobs.map((job) => {
                 const alreadyApplied = appliedJobIds.includes(job.id);
+                // Look up readable label for chips
+                const categoryLabel =
+                  categories.find((c) => c.key === job.category)?.label ||
+                  job.category;
 
                 return (
                   <Card
@@ -507,25 +518,30 @@ export default function ApplicantJobsPage() {
                   >
                     <CardBody className="p-0 sm:p-2">
                       <div className="flex flex-col sm:flex-row gap-4 p-4 sm:p-2">
-                        {/* Main Content */}
                         <div className="flex-grow flex flex-col justify-between">
                           <div>
                             <div className="flex justify-between items-start">
                               <h3 className="font-bold text-lg text-gray-900 mb-1">
                                 {job.title}
                               </h3>
-                              {/* Mobile Price (Hidden on Desktop) */}
                               <span className="sm:hidden font-bold text-blue-900 text-sm">
                                 ₱{job.budget_min} - {job.budget_max}
                               </span>
                             </div>
 
                             <div className="flex flex-wrap gap-2 mb-3">
-                              <Chip size="sm" variant="dot" color="secondary" className="border-none pl-0">
-                                {job.category}
+                              <Chip
+                                className="border-none pl-0"
+                                color="secondary"
+                                size="sm"
+                                variant="dot"
+                              >
+                                {categoryLabel}
                               </Chip>
                               {alreadyApplied && (
-                                <Chip size="sm" color="success" variant="flat">Applied</Chip>
+                                <Chip color="success" size="sm" variant="flat">
+                                  Applied
+                                </Chip>
                               )}
                             </div>
 
@@ -535,35 +551,42 @@ export default function ApplicantJobsPage() {
                           </div>
                         </div>
 
-                        {/* Action Side (Desktop: Right, Mobile: Bottom) */}
                         <div className="border-t sm:border-t-0 sm:border-l border-gray-100 pt-4 sm:pt-0 sm:pl-6 flex flex-row sm:flex-col justify-between items-center sm:items-end min-w-[160px]">
                           <div className="hidden sm:flex flex-col items-end text-right">
-                            <span className="text-xs text-gray-400">Est. Budget</span>
+                            <span className="text-xs text-gray-400">
+                              Est. Budget
+                            </span>
                             <span className="font-bold text-lg text-blue-900">
-                              ₱{Number(job.budget_min).toLocaleString()} - ₱{Number(job.budget_max).toLocaleString()}
+                              ₱{Number(job.budget_min).toLocaleString()} - ₱
+                              {Number(job.budget_max).toLocaleString()}
                             </span>
                           </div>
 
                           <div className="w-full sm:w-auto mt-auto">
                             {alreadyApplied ? (
                               <Button
-                                fullWidth
                                 disabled
-                                variant="flat"
+                                fullWidth
                                 color="default"
                                 size="md"
-                                startContent={<span className="text-xl">✓</span>}
+                                startContent={
+                                  <span className="text-xl">✓</span>
+                                }
+                                variant="flat"
                               >
                                 Applied
                               </Button>
                             ) : (
-                              <Link href={`/applicant/jobs/details?id=${job.id}`} className="w-full block">
+                              <Link
+                                className="w-full block"
+                                href={`/applicant/jobs/details?id=${job.id}`}
+                              >
                                 <Button
                                   fullWidth
-                                  color="primary"
-                                  variant="ghost"
-                                  size="md"
                                   className="font-medium hover:bg-primary hover:text-white"
+                                  color="primary"
+                                  size="md"
+                                  variant="ghost"
                                 >
                                   Details
                                 </Button>
@@ -581,14 +604,16 @@ export default function ApplicantJobsPage() {
                 <div className="bg-gray-50 p-4 rounded-full mb-4">
                   <Filter className="w-8 h-8 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">No jobs found</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  No jobs found
+                </h3>
                 <p className="text-gray-500 max-w-sm mt-2">
-                  We couldn't find any jobs matching your filters. Try adjusting your search terms or budget range.
+                  We couldn&#39;t find any jobs matching your filters.
                 </p>
                 <Button
+                  className="mt-4"
                   color="primary"
                   variant="light"
-                  className="mt-4"
                   onPress={() => {
                     setSearchTerm("");
                     setCategoryFilter("");

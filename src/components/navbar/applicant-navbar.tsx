@@ -11,11 +11,12 @@ import {
   DropdownItem,
   NavbarMenuToggle,
   NavbarMenu,
+  NavbarMenuItem,
   addToast,
 } from "@heroui/react";
 import { useEffect, useState } from "react";
 
-import { supabase } from "@/lib/supabase.ts";
+import { supabase } from "@/lib/supabase";
 
 // Define the navigation items for easy mapping
 const navItems = [
@@ -29,8 +30,9 @@ const navItems = [
 export default function ApplicantNavbar() {
   const [user, setUser] = useState<any>(null);
   const [userDB, setUserDB] = useState<any>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // State to control menu visibility
 
+  // ... (fetchUser, fetchUsersDB, useEffect, and signOut functions remain the same)
   const fetchUser = async () => {
     try {
       const { data, error } = await supabase.auth.getUser();
@@ -44,7 +46,7 @@ export default function ApplicantNavbar() {
       }
       setUser(data.user);
     } catch (error) {
-      throw error;
+      console.error(error);
     }
   };
 
@@ -58,7 +60,7 @@ export default function ApplicantNavbar() {
 
       if (error) {
         addToast({
-          title: "Error fetching user",
+          title: "Error fetching user details",
           description: error.message,
           color: "danger",
         });
@@ -67,7 +69,7 @@ export default function ApplicantNavbar() {
         setUserDB(data);
       }
     } catch (error) {
-      throw error;
+      console.error(error);
     }
   };
 
@@ -83,49 +85,66 @@ export default function ApplicantNavbar() {
     const { error } = await supabase.auth.signOut();
 
     if (error) throw error;
+    // Optional: Redirect to home or login page after sign out
+    window.location.href = "/";
   }
 
   return (
     <Navbar
       isBordered
-      maxWidth="full"
-      shouldHideOnScroll={true}
+      className="bg-white"
+      isMenuOpen={isMenuOpen} // <-- 1. Add this prop
+      maxWidth="xl"
       onMenuOpenChange={setIsMenuOpen}
     >
-      {/* Navbar Content - Start (Brand and Mobile Toggle) */}
-      <NavbarContent justify="start">
-        {/* Mobile Menu Toggle - Only visible on small screens */}
+      <NavbarContent>
         <NavbarMenuToggle
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           className="lg:hidden"
         />
-        {/* Brand */}
         <NavbarBrand>
-          <Link href="/applicant/dashboard">
-            <img alt="F and R Logo" className="h-8 w-8 mr-2" src="/logo.png" />
+          <Link
+            className="flex items-center gap-2 text-inherit"
+            href="/applicant/dashboard"
+            // Add onPress to close menu if navigating from the brand link while menu is open
+            onPress={() => isMenuOpen && setIsMenuOpen(false)}
+          >
+            <div className="p-1 rounded-lg">
+              <img
+                alt="F and R Logo"
+                className="h-8 w-8 mr-2"
+                src="/logo.png"
+              />
+            </div>
+            <p className="font-bold text-xl sm:text-2xl tracking-tight text-gray-900">
+              F<span className="text-primary">&</span>R
+              <span className="hidden sm:inline font-normal text-gray-500 text-lg ml-2">
+                Job Specialists
+              </span>
+            </p>
           </Link>
-          <p className="font-bold text-inherit text-2xl">F and R</p>
         </NavbarBrand>
       </NavbarContent>
 
-      {/* Navbar Content - Center (Desktop Links) */}
+      {/* Desktop Navigation & User Menu (Content remains the same) */}
       <NavbarContent className="hidden lg:flex gap-4" justify="end">
         {navItems.map((item) => (
           <NavbarItem key={item.name}>
             <Link
-              className="text-gray-700 hover:text-blue-600 transition-colors text-lg font-medium"
+              className="text-gray-600 hover:text-primary font-medium"
               href={item.href}
             >
               {item.name}
             </Link>
           </NavbarItem>
         ))}
+
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
             <Avatar
               isBordered
               as="button"
-              className="transition-transform"
+              className="transition-transform ml-4"
               color="primary"
               name={userDB?.full_name || ""}
               size="sm"
@@ -133,8 +152,12 @@ export default function ApplicantNavbar() {
             />
           </DropdownTrigger>
           <DropdownMenu aria-label="Profile Actions" variant="flat">
-            <DropdownItem key="profile" className="h-14 gap-2">
-              <Link href="/applicant/profile">
+            <DropdownItem
+              key="profile"
+              className="h-14 gap-2"
+              textValue="Signed in as"
+            >
+              <Link className="w-full" href="/applicant/profile">
                 <div className="grid grid-rows-2 justify-start">
                   <p className="font-normal text-gray-800 text-sm">
                     Signed in as
@@ -145,15 +168,20 @@ export default function ApplicantNavbar() {
                 </div>
               </Link>
             </DropdownItem>
-            <DropdownItem key="logout" color="danger" onClick={signOut}>
+            <DropdownItem key="settings" textValue="Profile Settings">
+              <Link className="text-inherit w-full" href="/applicant/profile">
+                Profile Settings
+              </Link>
+            </DropdownItem>
+            <DropdownItem key="logout" color="danger" onPress={signOut}>
               Log Out
             </DropdownItem>
           </DropdownMenu>
         </Dropdown>
       </NavbarContent>
 
-      {/* Mobile Menu - Only appears when toggled */}
-      <div className="lg:hidden gap-4">
+      {/* Mobile User Avatar (Visible on Navbar - Content remains the same) */}
+      <NavbarContent className="lg:hidden" justify="end">
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
             <Avatar
@@ -167,8 +195,12 @@ export default function ApplicantNavbar() {
             />
           </DropdownTrigger>
           <DropdownMenu aria-label="Profile Actions" variant="flat">
-            <DropdownItem key="profile" className="h-14 gap-2">
-              <Link href="/applicant/profile">
+            <DropdownItem
+              key="profile"
+              className="h-14 gap-2"
+              textValue="Signed in as"
+            >
+              <Link className="w-full" href="/applicant/profile">
                 <div className="grid grid-rows-2 justify-start">
                   <p className="font-normal text-gray-800 text-sm">
                     Signed in as
@@ -179,23 +211,26 @@ export default function ApplicantNavbar() {
                 </div>
               </Link>
             </DropdownItem>
-            <DropdownItem key="logout" color="danger" onClick={signOut}>
+            <DropdownItem key="logout" color="danger" onPress={signOut}>
               Log Out
             </DropdownItem>
           </DropdownMenu>
         </Dropdown>
-      </div>
-      <NavbarMenu>
+      </NavbarContent>
+
+      {/* Mobile Menu Items */}
+      <NavbarMenu className="pt-6 bg-white/95 backdrop-blur-md">
         {navItems.map((item, index) => (
-          <NavbarItem key={`${item.name}-${index}`}>
+          <NavbarMenuItem key={`${item.name}-${index}`}>
             <Link
-              className="w-full text-xl font-medium text-gray-700 hover:text-blue-600 transition-colors py-2"
+              className="w-full text-lg font-medium text-gray-700 hover:text-primary py-2"
               href={item.href}
               size="lg"
+              onPress={() => setIsMenuOpen(false)} // <-- 2. Add onPress to close menu
             >
               {item.name}
             </Link>
-          </NavbarItem>
+          </NavbarMenuItem>
         ))}
       </NavbarMenu>
     </Navbar>

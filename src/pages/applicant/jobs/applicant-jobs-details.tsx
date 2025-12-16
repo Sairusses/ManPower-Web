@@ -146,7 +146,7 @@ export default function ApplicantJobDetailsPage() {
         body: {
           type: "new_application",
           payload: {
-            to: "kurtarias123@gmail.com",
+            to: "rensarno0@gmail.com",
             applicantName: user.user_metadata.display_name,
             jobTitle: job?.title,
             applicantEmail: user.email,

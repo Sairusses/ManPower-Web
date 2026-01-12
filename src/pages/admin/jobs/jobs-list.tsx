@@ -128,7 +128,7 @@ export default function JobsList() {
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-3xl font-bold text-gray-900">My Jobs</h1>
-            <Link href="jobs/post">
+            <Link href="post">
               <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                 <Plus className="h-4 w-4 mr-2" />
                 Post New Job
@@ -264,7 +264,7 @@ export default function JobsList() {
                     ? "Try adjusting your search criteria"
                     : "You haven't posted any jobs yet"}
                 </p>
-                <Link href="jobs/post">
+                <Link href="post">
                   <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                     Post Your First Job
                   </Button>

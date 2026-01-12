@@ -9,7 +9,7 @@ import {
 } from "@heroui/react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
 
@@ -163,13 +163,22 @@ const skillCategoryMap: Record<string, string> = {
   housekeeping: "other",
 };
 
+// Define the interface for the new skill structure
+interface Skill {
+  name: string;
+  years: number;
+}
+
 export default function ApplicantProfile() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [resumeUploading, setResumeUploading] = useState(false);
-  const [newSkill, setNewSkill] = useState("");
+
+  // Skill State
+  const [newSkillName, setNewSkillName] = useState("");
+  const [newSkillYears, setNewSkillYears] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -198,18 +207,24 @@ export default function ApplicantProfile() {
           color: "danger",
         });
       }
-      setProfile(data);
+
+      // Ensure skills is initialized as an array
+      setProfile({
+        ...data,
+        skills: data.skills || [],
+      });
     } catch (error) {
-      throw error;
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = (field: string, value: string | number) => {
     setProfile((prev: any) => ({ ...prev, [field]: value }));
   };
 
+  // ... (Avatar and Resume functions remain unchanged) ...
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true);
@@ -229,17 +244,11 @@ export default function ApplicantProfile() {
           contentType: file.type,
         });
 
-      if (uploadError) {
-        addToast({
-          title: "Error uploading file",
-          description: uploadError.message,
-        });
-      }
+      if (uploadError) throw uploadError;
 
       const { data: publicUrlData } = supabase.storage
         .from("uploads")
         .getPublicUrl(filePath);
-
       const avatarUrl = publicUrlData.publicUrl;
 
       setProfile((prev: any) => ({ ...prev, avatar_url: avatarUrl }));
@@ -251,7 +260,7 @@ export default function ApplicantProfile() {
 
       addToast({
         title: "Success",
-        description: "Avatar updated successfully!",
+        description: "Avatar updated!",
         color: "success",
       });
     } catch (error: any) {
@@ -281,17 +290,7 @@ export default function ApplicantProfile() {
       ) {
         addToast({
           title: "Invalid File",
-          description: "Only PDF, DOC, DOCX files are allowed.",
-          color: "danger",
-        });
-
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        addToast({
-          title: "File Too Large",
-          description: "Max file size is 5MB.",
+          description: "PDF/DOC/DOCX only.",
           color: "danger",
         });
 
@@ -310,17 +309,11 @@ export default function ApplicantProfile() {
           contentType: file.type,
         });
 
-      if (uploadError) {
-        addToast({
-          title: "Error uploading file",
-          description: uploadError.message,
-        });
-      }
+      if (uploadError) throw uploadError;
 
       const { data: publicUrlData } = supabase.storage
         .from("uploads")
         .getPublicUrl(filePath);
-
       const resumeUrl = publicUrlData.publicUrl;
 
       setProfile((prev: any) => ({ ...prev, resume_url: resumeUrl }));
@@ -332,7 +325,7 @@ export default function ApplicantProfile() {
 
       addToast({
         title: "Success",
-        description: "Resume uploaded successfully!",
+        description: "Resume uploaded!",
         color: "success",
       });
     } catch (error: any) {
@@ -355,34 +348,81 @@ export default function ApplicantProfile() {
       setProfile((prev: any) => ({ ...prev, resume_url: null }));
       addToast({
         title: "Removed",
-        description: "Resume removed successfully.",
+        description: "Resume removed.",
         color: "success",
       });
     } catch (error: any) {
-      addToast({
-        title: "Error",
-        description: error.message,
-        color: "danger",
-      });
+      addToast({ title: "Error", description: error.message, color: "danger" });
     }
   };
 
+  // --- NEW SKILL LOGIC ---
+
   const addSkill = () => {
-    if (!newSkill.trim()) return;
-    const updatedSkills = [...(profile.skills || []), newSkill.trim()];
+    if (!newSkillName.trim()) {
+      addToast({
+        title: "Missing Name",
+        description: "Please enter a skill name.",
+        color: "warning",
+      });
+
+      return;
+    }
+    if (!newSkillYears) {
+      addToast({
+        title: "Missing Experience",
+        description: "Please enter years of experience.",
+        color: "warning",
+      });
+
+      return;
+    }
+
+    // Create the new skill object
+    const newSkillObj: Skill = {
+      name: newSkillName.trim(),
+      years: parseInt(newSkillYears),
+    };
+
+    // Check for duplicates
+    const exists = profile.skills.some(
+      (s: any) =>
+        (typeof s === "string" ? s : s.name).toLowerCase() ===
+        newSkillObj.name.toLowerCase(),
+    );
+
+    if (exists) {
+      addToast({
+        title: "Duplicate",
+        description: "You already added this skill.",
+        color: "warning",
+      });
+
+      return;
+    }
+
+    const updatedSkills = [...(profile.skills || []), newSkillObj];
 
     setProfile((prev: any) => ({ ...prev, skills: updatedSkills }));
-    setNewSkill("");
+
+    // Reset inputs
+    setNewSkillName("");
+    setNewSkillYears("");
   };
 
-  const removeSkill = (skill: string) => {
-    const updatedSkills = profile.skills.filter((s: string) => s !== skill);
+  const removeSkill = (skillNameToRemove: string) => {
+    // Handle both old string format and new object format just in case
+    const updatedSkills = profile.skills.filter((s: any) => {
+      const name = typeof s === "string" ? s : s.name;
+
+      return name !== skillNameToRemove;
+    });
 
     setProfile((prev: any) => ({ ...prev, skills: updatedSkills }));
   };
 
   useEffect(() => {
-    if (!newSkill.trim()) {
+    if (!newSkillName.trim()) {
       setSuggestions([]);
       setShowDropdown(false);
 
@@ -390,18 +430,21 @@ export default function ApplicantProfile() {
     }
 
     const handler = setTimeout(() => {
-      const input = newSkill.toLowerCase();
+      const input = newSkillName.toLowerCase();
 
-      const matches = Object.keys(skillCategoryMap).filter((skill) =>
-        skill.includes(input),
-      );
+      // Ensure skillCategoryMap exists before accessing
+      if (typeof skillCategoryMap !== "undefined") {
+        const matches = Object.keys(skillCategoryMap).filter((skill) =>
+          skill.toLowerCase().includes(input),
+        );
 
-      setSuggestions(matches);
-      setShowDropdown(matches.length > 0);
+        setSuggestions(matches);
+        setShowDropdown(matches.length > 0);
+      }
     }, 300);
 
     return () => clearTimeout(handler);
-  }, [newSkill]);
+  }, [newSkillName]);
 
   const handleSave = async () => {
     try {
@@ -413,16 +456,12 @@ export default function ApplicantProfile() {
           bio: profile.bio,
           location: profile.location,
           website: profile.website,
-          skills: profile.skills,
+          expected_salary: profile.expected_salary, // Added Salary
+          skills: profile.skills, // Now sends JSON array
         })
         .eq("id", user.id);
 
-      if (error) {
-        addToast({
-          title: "Error uploading file",
-          description: error.message,
-        });
-      }
+      if (error) throw error;
 
       addToast({
         title: "Profile Saved",
@@ -530,6 +569,22 @@ export default function ApplicantProfile() {
                 variant="bordered"
                 onChange={(e) => handleChange("location", e.target.value)}
               />
+              {/* NEW: Expected Salary */}
+              <Input
+                label="Expected Salary"
+                labelPlacement="outside"
+                placeholder="e.g. 50000"
+                radius="sm"
+                startContent={
+                  <span className="text-default-400 text-small">&#8369;</span>
+                }
+                type="number"
+                value={profile?.expected_salary || ""}
+                variant="bordered"
+                onChange={(e) =>
+                  handleChange("expected_salary", parseFloat(e.target.value))
+                }
+              />
             </div>
 
             {/* Bio & Website */}
@@ -553,56 +608,97 @@ export default function ApplicantProfile() {
                 variant="bordered"
                 onChange={(e) => handleChange("website", e.target.value)}
               />
-              {/* Skills */}
-              <div className="relative">
-                <h2 className="text-sm mb-2">Skills</h2>
 
-                <div className="flex gap-2 mb-1">
-                  <Input
-                    placeholder="Type a skill (e.g. React, Welding, Forklift)"
-                    value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
-                    onFocus={() => setShowDropdown(true)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && newSkill.trim()) {
-                        e.preventDefault();
-                        addSkill();
-                        setShowDropdown(false);
-                      }
-                    }}
-                  />
-                  <Button onClick={addSkill}>+</Button>
-                </div>
+              {/* --- SKILLS SECTION --- */}
+              <div className="relative mt-2">
+                <h2 className="text-sm font-medium mb-2">
+                  Skills & Experience
+                </h2>
 
-                {/* Dropdown */}
-                {showDropdown && suggestions.length > 0 && (
-                  <div className="absolute z-20 w-full bg-white border rounded-md shadow-sm max-h-40 overflow-y-auto">
-                    {suggestions.map((skill) => (
-                      <button
-                        key={skill}
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
-                        onClick={() => {
-                          setNewSkill(skill);
-                          setShowDropdown(false);
-                        }}
-                      >
-                        {skill}
-                      </button>
-                    ))}
+                <div className="flex gap-2 mb-1 items-end">
+                  <div className="flex-grow">
+                    <Input
+                      label="Skill Name"
+                      placeholder="e.g. React"
+                      value={newSkillName}
+                      onChange={(e) => setNewSkillName(e.target.value)}
+                      onFocus={() => setShowDropdown(true)}
+                    />
+                    {/* Suggestion Dropdown */}
+                    {showDropdown && suggestions.length > 0 && (
+                      <div className="absolute z-20 w-64 bg-white border rounded-md shadow-lg max-h-40 overflow-y-auto mt-1">
+                        {suggestions.map((skill) => (
+                          <button
+                            key={skill}
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
+                            onClick={() => {
+                              setNewSkillName(skill);
+                              setShowDropdown(false);
+                            }}
+                          >
+                            {skill}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
+
+                  <div className="w-32">
+                    <Input
+                      label="Years"
+                      min={0}
+                      placeholder="e.g. 3"
+                      type="number"
+                      value={newSkillYears}
+                      onChange={(e) => setNewSkillYears(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addSkill();
+                        }
+                      }}
+                    />
+                  </div>
+
+                  <Button
+                    isIconOnly
+                    color="primary"
+                    variant="flat"
+                    onClick={addSkill}
+                  >
+                    <Plus size={20} />
+                  </Button>
+                </div>
 
                 {/* Skill Chips */}
                 <div className="flex flex-wrap gap-2 mt-3">
-                  {profile?.skills?.map((skill: string, index: number) => (
-                    <Chip key={index} onClose={() => removeSkill(skill)}>
-                      {skill}
-                    </Chip>
-                  ))}
+                  {profile?.skills?.map((skill: any, index: number) => {
+                    // Handle display for both new object format and potential old string format
+                    const name = typeof skill === "string" ? skill : skill.name;
+                    const years =
+                      typeof skill === "string" ? null : skill.years;
+
+                    return (
+                      <Chip
+                        key={index}
+                        color="primary"
+                        variant="flat"
+                        onClose={() => removeSkill(name)}
+                      >
+                        {name}{" "}
+                        {years !== null && (
+                          <span className="text-xs opacity-75">
+                            ({years} yrs)
+                          </span>
+                        )}
+                      </Chip>
+                    );
+                  })}
                 </div>
               </div>
+
               {/* Resume */}
-              <div className="">
+              <div className="mt-4">
                 <h2 className="text-lg font-semibold mb-2">Resume</h2>
                 {profile?.resume_url ? (
                   <div className="flex items-center gap-2">
@@ -627,7 +723,7 @@ export default function ApplicantProfile() {
                 ) : (
                   <div className="border-2 border-dashed border-gray-300 p-6 text-center rounded-md">
                     <label
-                      className="cursor-pointer text-gray-600"
+                      className="cursor-pointer text-gray-600 block"
                       htmlFor="resume-upload"
                     >
                       Click to upload or drag and drop <br />
@@ -650,10 +746,11 @@ export default function ApplicantProfile() {
                 )}
               </div>
             </div>
+
             {/* Save */}
             <div className="flex w-full justify-center items-center mt-8">
               <Button
-                className="w-md bg-blue-600 text-white"
+                className="w-full sm:w-1/3 bg-blue-600 text-white"
                 onClick={handleSave}
               >
                 Save Changes

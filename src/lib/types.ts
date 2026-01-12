@@ -36,6 +36,14 @@ export interface Job {
   files?: string[];
 }
 
+export interface ScoredJob {
+  job_id: string;
+  title: string;
+  match_percentage: number;
+  matching_skills: string[];
+  missing_skills: string[];
+}
+
 export interface Proposal {
   id: string;
   job_id: string;

@@ -26,10 +26,6 @@ export default function PostJob() {
   const [selectedCategory, setSelectedCategory] = React.useState(
     new Set(["Category"]),
   );
-  // @ts-ignore
-  const [selectedTimeline, setSelectedTimeline] = React.useState(
-    new Set(["Duration"]),
-  );
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<
@@ -42,11 +38,6 @@ export default function PostJob() {
   const selectedValueCategory = React.useMemo(
     () => Array.from(selectedCategory).join(", ").replace(/_/g, " "),
     [selectedCategory],
-  );
-
-  const selectedValueTimeline = React.useMemo(
-    () => Array.from(selectedTimeline).join(", ").replace(/_/g, " "),
-    [selectedTimeline],
   );
 
   const categories = [
@@ -89,25 +80,6 @@ export default function PostJob() {
     {
       key: "other",
       label: "Other",
-    },
-  ];
-
-  const duration = [
-    {
-      key: "1-4_weeks",
-      label: "1-4 weeks",
-    },
-    {
-      key: "1-6_months",
-      label: "1-6 months",
-    },
-    {
-      key: "6-12 months",
-      label: "6-12 months",
-    },
-    {
-      key: "1_year+",
-      label: "1 year+",
     },
   ];
 
@@ -156,7 +128,6 @@ export default function PostJob() {
           category: selectedValueCategory,
           budget_min: budgetMin,
           budget_max: budgetMax,
-          duration: selectedValueTimeline,
           required_skills: skills,
           files: uploadedFiles,
           status: "open",
@@ -258,32 +229,6 @@ export default function PostJob() {
                   variant="flat"
                   onSelectionChange={(keys) =>
                     setSelectedCategory(new Set(keys as Set<string>))
-                  }
-                >
-                  {(item) => (
-                    <DropdownItem key={item.key}>{item.label}</DropdownItem>
-                  )}
-                </DropdownMenu>
-              </Dropdown>
-              <div className="text-sm ">Duration *</div>
-              <Dropdown className="w-xl">
-                <DropdownTrigger>
-                  <Button
-                    className="capitalize w-full justify-start"
-                    variant="bordered"
-                  >
-                    {selectedValueTimeline}
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu
-                  aria-label="Duration selection"
-                  disallowEmptySelection={true}
-                  items={duration}
-                  selectedKeys={selectedTimeline}
-                  selectionMode="single"
-                  variant="flat"
-                  onSelectionChange={(keys) =>
-                    setSelectedTimeline(new Set(keys as Set<string>))
                   }
                 >
                   {(item) => (

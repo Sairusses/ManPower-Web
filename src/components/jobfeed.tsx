@@ -104,12 +104,9 @@ const JobFeed = ({ userId }: { userId: string }) => {
 
   return (
     <div className="space-y-6 mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100">
+      <div className="flex flex-col sm:flex-row justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Job Matches</h2>
-          <p className="text-sm text-gray-600 mt-1">
-            Scores combine profile text analysis (70%) and salary fit (30%).
-          </p>
+          <h2 className="text-2xl font-bold text-gray-800">Recommended Jobs</h2>
         </div>
         <Button
           className="shadow-md font-semibold"
@@ -129,13 +126,26 @@ const JobFeed = ({ userId }: { userId: string }) => {
             className="min-w-[20rem] flex-shrink-0 h-full hover:-translate-y-1 transition-transform duration-300"
           >
             <CardHeader className="flex justify-between items-start pb-2">
-              <div className="w-3/4">
+              <div className="w-3/4 col-2">
                 <h3
                   className="font-bold text-lg leading-tight line-clamp-2"
                   title={job.title}
                 >
                   {job.title}
                 </h3>
+
+                {job.match_percentage > 70 && (
+                  <Chip
+                    className="mt-1 text-xs font-bold uppercase tracking-wide text-white"
+                    color="success"
+                    radius="lg"
+                    size="md"
+                    startContent={<span>⭐</span>}
+                    variant="solid"
+                  >
+                    Best Match
+                  </Chip>
+                )}
               </div>
               <CircularMatch value={job.match_percentage} />
             </CardHeader>

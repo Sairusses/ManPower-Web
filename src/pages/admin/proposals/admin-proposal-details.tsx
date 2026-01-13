@@ -33,13 +33,12 @@ export default function AdminProposalDetails() {
           id,
           cover_letter,
           proposed_rate,
-          estimated_duration,
           status,
           attachments,
           created_at,
           job:jobs(id, title, description),
           applicant:users(id, full_name, avatar_url, email, phone, location, bio, skills, hourly_rate, resume_url)
-        `,
+        `
         )
         .eq("id", id)
         .single();
@@ -84,7 +83,7 @@ export default function AdminProposalDetails() {
     try {
       setSubmitting(true);
 
-      // update proposal status
+      // 1. Update proposal status
       const { error: updateError } = await supabase
         .from("proposals")
         .update({ status: decision })
@@ -93,28 +92,13 @@ export default function AdminProposalDetails() {
       if (updateError) throw updateError;
 
       if (decision === "accepted") {
-        // create contract
-        const { data: contractData, error: contractError } = await supabase
-          .from("contracts")
-          .insert([
-            {
-              job_id: proposal.job?.id,
-              proposal_id: proposal.id,
-              applicant_id: proposal.applicant?.id,
-              agreed_rate: proposal.proposed_rate,
-              start_date: new Date().toISOString(),
-              status: "active",
-            },
-          ])
-          .select()
-          .single();
+        // REMOVED: Contract creation logic.
 
-        if (contractError) throw contractError;
-
+        // 2. Create the initial acceptance message linked to the PROPOSAL
         const messageContent = `I accepted your proposal for "${proposal.job?.title}"`;
         const { error: messageError } = await supabase.from("messages").insert([
           {
-            contract_id: contractData.id,
+            // Removed contract_id
             proposal_id: proposal.id,
             sender_id: userID,
             receiver_id: proposal.applicant?.id,
@@ -125,7 +109,7 @@ export default function AdminProposalDetails() {
 
         if (messageError) throw messageError;
 
-        // Invoke email-notify function
+        // 3. Email Notification
         await supabase.functions.invoke("email-notify", {
           body: {
             type: "proposal_accepted",
@@ -135,14 +119,15 @@ export default function AdminProposalDetails() {
               jobTitle: proposal.job?.title,
               jobDescription: proposal.job?.description,
               proposedRate: proposal.proposed_rate,
-              estimatedDuration: proposal.estimated_duration,
               coverLetter: proposal.cover_letter,
             },
           },
         });
 
-        window.location.href = `/admin/messages?contractId=${contractData.id}`;
+        // 4. Redirect to messages using proposalId
+        window.location.href = `/admin/messages?proposalId=${proposal.id}&applicantId=${proposal.applicant?.id}`;
       } else {
+        // Rejection Logic
         await supabase.functions.invoke("email-notify", {
           body: {
             type: "proposal_rejected",
@@ -223,7 +208,7 @@ export default function AdminProposalDetails() {
 
             {proposal.applicant?.skills && (
               <div className="flex flex-wrap gap-1 mb-4">
-                {proposal.applicant.skills.map((skill: string, idx: number) => (
+                {proposal.applicant.skills.map((skill: any, idx: number) => (
                   <Chip
                     key={idx}
                     className="p-2"
@@ -231,7 +216,9 @@ export default function AdminProposalDetails() {
                     size="sm"
                     variant="flat"
                   >
-                    {skill}
+                    {typeof skill === "object" && skill !== null
+                      ? skill.name
+                      : skill}
                   </Chip>
                 ))}
               </div>
@@ -255,7 +242,7 @@ export default function AdminProposalDetails() {
                   color="primary"
                   startContent={<MessageSquare className="h-4 w-4" />}
                   onPress={() =>
-                    (window.location.href = `/messages?proposalId=${proposal.id}&applicantId=${proposal.applicant?.id}`)
+                    (window.location.href = `/admin/messages?proposalId=${proposal.id}&applicantId=${proposal.applicant?.id}`)
                   }
                 >
                   Message Applicant
@@ -279,19 +266,11 @@ export default function AdminProposalDetails() {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500">Estimated Duration</p>
-                <p className="font-bold text-blue-600">
-                  {proposal.estimated_duration}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Proposed Rate</p>
-                <p className="font-bold text-blue-600">
-                  ₱{proposal.proposed_rate}
-                </p>
-              </div>
+            <div>
+              <p className="text-sm text-gray-500">Proposed Rate</p>
+              <p className="font-bold text-blue-600">
+                ₱{proposal.proposed_rate}
+              </p>
             </div>
 
             <div>
@@ -309,7 +288,6 @@ export default function AdminProposalDetails() {
               </Chip>
             </div>
 
-            {/* Attachments */}
             {attachments.length > 0 && (
               <div className="mt-4">
                 <p className="text-sm text-gray-500 mb-2">Attachments:</p>
@@ -331,13 +309,12 @@ export default function AdminProposalDetails() {
                           {file.name}
                         </Button>
                       </Link>
-                    ),
+                    )
                   )}
                 </div>
               </div>
             )}
 
-            {/* Accept / Reject buttons */}
             {proposal.status === "pending" && (
               <div className="flex gap-3 pt-4">
                 <Button

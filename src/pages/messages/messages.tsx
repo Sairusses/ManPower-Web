@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Avatar, Button, Input, Chip } from "@heroui/react";
-import { Send, ChevronLeft } from "lucide-react"; // Added ChevronLeft
+import { Send, ChevronLeft } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 import { getSupabaseClient } from "@/lib/supabase";
@@ -59,27 +59,18 @@ export default function MessagesPage() {
   useEffect(() => {
     if (!userProfile) return;
     const loadConversations = async () => {
+      // ONLY fetch proposals now
       let proposalsQuery = supabase
         .from("proposals")
-        .select("*, applicant:applicant_id(*)");
-      let contractsQuery = supabase
-        .from("contracts")
         .select("*, applicant:applicant_id(*)");
 
       if (userProfile.role === "applicant") {
         proposalsQuery = proposalsQuery.eq("applicant_id", userProfile.id);
-        contractsQuery = contractsQuery.eq("applicant_id", userProfile.id);
       }
 
       const { data: proposals } = await proposalsQuery;
-      const { data: contracts } = await contractsQuery;
 
-      const combined = [
-        ...(proposals?.map((p) => ({ ...p, type: "proposal" })) || []),
-        ...(contracts?.map((c) => ({ ...c, type: "contract" })) || []),
-      ];
-
-      setConversations(combined);
+      setConversations(proposals || []);
     };
 
     loadConversations();
@@ -88,21 +79,14 @@ export default function MessagesPage() {
   useEffect(() => {
     if (!conversations.length) return;
     const proposalId = params.get("proposalId");
-    const contractId = params.get("contractId");
 
     let found = null;
 
-    if (proposalId)
-      found = conversations.find(
-        (c) => c.type === "proposal" && c.id === proposalId,
-      );
-    if (contractId)
-      found = conversations.find(
-        (c) => c.type === "contract" && c.id === contractId,
-      );
+    if (proposalId) {
+      found = conversations.find((c) => c.id === proposalId);
+    }
 
     if (found) setSelectedConversation(found);
-    // If no ID in params, ensure we don't have a selection (important for mobile back nav)
     else setSelectedConversation(null);
   }, [params, conversations]);
 
@@ -110,13 +94,12 @@ export default function MessagesPage() {
     if (!selectedConversation) return;
 
     const loadMessages = async () => {
-      let query = supabase.from("messages").select("*").order("created_at");
-
-      if (selectedConversation.type === "contract") {
-        query = query.eq("contract_id", selectedConversation.id);
-      } else {
-        query = query.eq("proposal_id", selectedConversation.id);
-      }
+      // Always query by proposal_id
+      const query = supabase
+        .from("messages")
+        .select("*")
+        .eq("proposal_id", selectedConversation.id)
+        .order("created_at");
 
       const { data } = await query;
 
@@ -138,15 +121,14 @@ export default function MessagesPage() {
         { event: "INSERT", schema: "public", table: "messages" },
         (payload) => {
           const msg = payload.new;
-          const convoId = msg.contract_id || msg.proposal_id;
+          // Only check proposal_id
+          const convoId = msg.proposal_id;
 
           if (!convoId) return;
 
           setMessagesByConversation((prev: any) => {
             const current = prev[convoId] || [];
-
             if (current.some((m: any) => m.id === msg.id)) return prev;
-
             return { ...prev, [convoId]: [...current, msg] };
           });
 
@@ -155,11 +137,10 @@ export default function MessagesPage() {
           if (activeConvo && activeConvo.id === convoId) {
             setMessages((prev) => {
               if (prev.some((m) => m.id === msg.id)) return prev;
-
               return [...prev, msg];
             });
           }
-        },
+        }
       )
       .subscribe();
 
@@ -171,7 +152,6 @@ export default function MessagesPage() {
   useEffect(() => {
     if (chatContainerRef.current) {
       const { scrollHeight, clientHeight } = chatContainerRef.current;
-
       chatContainerRef.current.scrollTo({
         top: scrollHeight - clientHeight,
         behavior: "smooth",
@@ -197,13 +177,8 @@ export default function MessagesPage() {
     const messageData: any = {
       sender_id: userProfile.id,
       content: optimistic.content,
+      proposal_id: selectedConversation.id, // Always use proposal_id
     };
-
-    if (selectedConversation.type === "contract") {
-      messageData.contract_id = selectedConversation.id;
-    } else {
-      messageData.proposal_id = selectedConversation.id;
-    }
 
     const { data, error } = await supabase
       .from("messages")
@@ -223,11 +198,8 @@ export default function MessagesPage() {
       ? "/admin/messages"
       : "/applicant/messages";
 
-    if (item.type === "contract") {
-      navigate(`${basePath}?contractId=${item.id}`);
-    } else {
-      navigate(`${basePath}?proposalId=${item.id}`);
-    }
+    // Only one route type now
+    navigate(`${basePath}?proposalId=${item.id}`);
 
     if (messagesByConversation[item.id]) {
       setMessages(messagesByConversation[item.id]);
@@ -294,12 +266,13 @@ export default function MessagesPage() {
                           <Chip
                             className="ml-2"
                             color={
-                              item.type === "contract" ? "success" : "primary"
+                              item.status === "accepted" ? "success" : "default"
                             }
                             size="sm"
                             variant="flat"
                           >
-                            {item.type}
+                            {/* Changed from Type to Status (Accepted/Pending) */}
+                            {item.status}
                           </Chip>
                         </div>
                         <p className="text-sm text-gray-600 truncate">
@@ -345,14 +318,14 @@ export default function MessagesPage() {
 
                   <Chip
                     color={
-                      selectedConversation.type === "contract"
+                      selectedConversation.status === "accepted"
                         ? "success"
-                        : "primary"
+                        : "default"
                     }
                     size="sm"
                     variant="flat"
                   >
-                    {selectedConversation.type}
+                    {selectedConversation.status}
                   </Chip>
                 </CardHeader>
 
@@ -367,7 +340,9 @@ export default function MessagesPage() {
                       return (
                         <div
                           key={msg.id}
-                          className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
+                          className={`flex ${
+                            isOwn ? "justify-end" : "justify-start"
+                          }`}
                         >
                           <div
                             className={`px-4 py-2 rounded-lg max-w-[85%] md:max-w-xs break-words ${

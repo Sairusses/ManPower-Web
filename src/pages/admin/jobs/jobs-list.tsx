@@ -227,13 +227,13 @@ export default function JobsList() {
                   <div className="flex justify-between items-center">
                     <div className="text-sm text-gray-500" />
                     <div className="flex gap-2">
-                      <Link href={`jobs/details?id=${job.id}`}>
+                      <Link href={`details?id=${job.id}`}>
                         <Button size="sm" variant="ghost">
                           <Eye className="h-4 w-4 mr-2" />
                           View
                         </Button>
                       </Link>
-                      <Link href={`/admin/jobs/edit/${job.id}`}>
+                      <Link href={`edit/${job.id}`}>
                         <Button size="sm" variant="ghost">
                           <Edit className="h-4 w-4 mr-2" />
                           Edit

@@ -371,7 +371,7 @@ export default function ApplicantJobDetailsPage() {
               <Card className="w-full" radius="md" shadow="md">
                 <CardHeader className="pb-0 pt-6 px-6 grid grid-cols-1">
                   <h2 className="text-xl font-bold text-gray-900">
-                    Submit Proposal
+                    Submit Application
                   </h2>
                   <p className="text-sm text-gray-500 mt-1">
                     Interested in this job? Send a proposal.
@@ -495,7 +495,7 @@ export default function ApplicantJobDetailsPage() {
                     startContent={!isSubmitting && <Send size={18} />}
                     onPress={handleApply}
                   >
-                    {isSubmitting ? "Submitting..." : "Submit Proposal"}
+                    {isSubmitting ? "Submitting..." : "Submit Application"}
                   </Button>
                 </CardFooter>
               </Card>

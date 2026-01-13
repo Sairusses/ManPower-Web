@@ -8,7 +8,6 @@ import {
   CardBody,
   CardFooter,
   Chip,
-  Input,
   Link,
   Textarea,
   Divider,
@@ -44,7 +43,6 @@ export default function ApplicantJobDetailsPage() {
 
   // Proposal form states
   const [coverLetter, setCoverLetter] = useState("");
-  const [proposedRate, setProposedRate] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -79,7 +77,7 @@ export default function ApplicantJobDetailsPage() {
   };
 
   const handleApply = async () => {
-    if (!coverLetter || !proposedRate) {
+    if (!coverLetter) {
       addToast({
         title: "Missing fields",
         description: "Please fill out all required fields.",
@@ -133,7 +131,6 @@ export default function ApplicantJobDetailsPage() {
         job_id: job?.id,
         applicant_id: user.id,
         cover_letter: coverLetter,
-        proposed_rate: parseFloat(proposedRate),
         status: "pending",
         attachments: uploadedFiles,
       });
@@ -374,30 +371,11 @@ export default function ApplicantJobDetailsPage() {
                     Submit Application
                   </h2>
                   <p className="text-sm text-gray-500 mt-1">
-                    Interested in this job? Send a proposal.
+                    Interested in this job? Send an application.
                   </p>
                 </CardHeader>
 
                 <CardBody className="px-6 py-6 gap-5">
-                  <Input
-                    classNames={{
-                      label: "font-semibold text-gray-700",
-                      inputWrapper: "bg-white",
-                    }}
-                    label="Expected Salary (₱)"
-                    labelPlacement="outside"
-                    placeholder="0.00"
-                    startContent={
-                      <div className="pointer-events-none flex items-center">
-                        <span className="text-default-400 text-small">₱</span>
-                      </div>
-                    }
-                    type="number"
-                    value={proposedRate}
-                    variant="bordered"
-                    onChange={(e) => setProposedRate(e.target.value)}
-                  />
-
                   <Textarea
                     classNames={{
                       label: "font-semibold text-gray-700",

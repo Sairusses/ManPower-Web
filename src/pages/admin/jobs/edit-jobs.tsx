@@ -49,12 +49,6 @@ const categories = [
   },
 ];
 
-const durations = [
-  { key: "1-4_weeks", label: "1-4 weeks" },
-  { key: "1-6_months", label: "1-6 months" },
-  { key: "6-12_months", label: "6-12 months" },
-  { key: "1_year+", label: "1 year+" },
-];
 
 export default function EditJob() {
   const { id } = useParams(); // job id from route
@@ -75,7 +69,6 @@ export default function EditJob() {
   const [status, setStatus] = useState("");
   const [budgetMin, setBudgetMin] = useState("");
   const [budgetMax, setBudgetMax] = useState("");
-  const [duration, setDuration] = useState("");
 
   useEffect(() => {
     if (id) fetchJob(id);
@@ -97,7 +90,6 @@ export default function EditJob() {
       setBudgetMin(data.budget_min || "");
       setBudgetMax(data.budget_max || "");
       setUploadedFiles(data.files || "");
-      setDuration(data.duration || "");
     } catch (error: any) {
       addToast({
         title: "Error loading job",
@@ -121,7 +113,6 @@ export default function EditJob() {
           budget_min: budgetMin,
           budget_max: budgetMax,
           files: uploadedFiles,
-          duration,
         })
         .eq("id", id);
 
@@ -194,18 +185,6 @@ export default function EditJob() {
             <SelectItem key="in_progress">In Progress</SelectItem>
             <SelectItem key="completed">Completed</SelectItem>
             <SelectItem key="cancelled">Cancelled</SelectItem>
-          </Select>
-
-          <Select
-            label="Duration"
-            selectedKeys={duration ? [duration] : []}
-            onSelectionChange={(keys) =>
-              setDuration(Array.from(keys)[0] as string)
-            }
-          >
-            {durations.map((t) => (
-              <SelectItem key={t.key}>{t.label}</SelectItem>
-            ))}
           </Select>
 
           <FileUpload

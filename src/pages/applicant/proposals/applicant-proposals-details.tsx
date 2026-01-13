@@ -116,11 +116,6 @@ export default function ApplicantProposalsDetails() {
             {/* LEFT COLUMN: Admin Info (Stays sticky/fixed on scroll on desktop) */}
             <div className="lg:sticky lg:top-8 lg:col-span-1 space-y-8">
               <Card className="p-6 bg-white" radius="lg" shadow="md">
-                <CardHeader className="p-0 mb-4">
-                  <h2 className="text-xl font-bold text-gray-900">
-                    Client Information
-                  </h2>
-                </CardHeader>
                 <CardBody className="p-0">
                   {admin ? (
                     <div className="space-y-4">

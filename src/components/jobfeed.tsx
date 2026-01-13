@@ -1,115 +1,91 @@
 import { useEffect, useState } from "react";
-import { Button, Link } from "@heroui/react";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  Divider,
+  Chip,
+  Link,
+  Skeleton,
+} from "@heroui/react";
+import { CardHeader } from "@heroui/card";
 
-import { ScoredJob } from "@/lib/types.ts";
-import { supabase } from "@/lib/supabase.ts";
+import { supabase } from "@/lib/supabase";
+
+interface ScoredJob {
+  job_id: string;
+  title: string;
+  match_percentage: number;
+  matching_skills: string[];
+  missing_skills: string[];
+  is_ai_processed: boolean;
+}
 
 const CircularMatch = ({ value }: { value: number }) => {
   const pct = Math.max(0, Math.min(100, Math.round(value)));
-  const stroke = 8;
-  const size = 56;
-  const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (pct / 100) * circumference;
-
-  const color = pct > 80 ? "#3b82f6" : pct > 50 ? "#93c5fd" : "#dbeafe";
+  const color = pct > 80 ? "#10b981" : pct > 50 ? "#3b82f6" : "#94a3b8";
 
   return (
-    <svg
-      className="block"
-      height={size}
-      viewBox={`0 0 ${size} ${size}`}
-      width={size}
-    >
-      <defs>
-        <linearGradient id="g" x1="0" x2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="1" />
-          <stop offset="100%" stopColor={color} stopOpacity="0.9" />
-        </linearGradient>
-      </defs>
-      <g transform={`translate(${size / 2}, ${size / 2})`}>
+    <div className="relative flex items-center justify-center w-14 h-14">
+      <svg className="w-full h-full transform -rotate-90">
         <circle
+          className="text-gray-200"
+          cx="28"
+          cy="28"
           fill="transparent"
-          r={radius}
-          stroke="#eef2f7"
-          strokeLinecap="round"
-          strokeWidth={stroke}
+          r="24"
+          stroke="currentColor"
+          strokeWidth="4"
         />
         <circle
+          className="transition-all duration-1000 ease-out"
+          cx="28"
+          cy="28"
           fill="transparent"
-          r={radius}
-          stroke="url(#g)"
-          strokeDasharray={`${circumference} ${circumference}`}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          strokeWidth={stroke}
-          transform="rotate(-90)"
+          r="24"
+          stroke={color}
+          strokeDasharray={150}
+          strokeDashoffset={150 - (150 * pct) / 100}
+          strokeWidth="4"
         />
-        <text
-          fill="#111827"
-          fontSize="14"
-          fontWeight={700}
-          textAnchor="middle"
-          x="0"
-          y="2"
-        >
-          {pct}%
-        </text>
-      </g>
-    </svg>
+      </svg>
+      <div className="absolute flex flex-col items-center">
+        <span className="text-sm font-bold text-gray-800">{pct}%</span>
+      </div>
+    </div>
   );
 };
-
-const SkillChip = ({
-  text,
-  variant = "have",
-}: {
-  text: string;
-  variant?: "have" | "missing";
-}) => (
-  <span
-    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mr-2 mb-2
-      ${variant === "have" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-700"}`}
-  >
-    {variant === "have" ? "✓ " : "• "} {text}
-  </span>
-);
 
 const JobFeed = ({ userId }: { userId: string }) => {
   const [jobs, setJobs] = useState<ScoredJob[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAiProcessing, setIsAiProcessing] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   const fetchMatches = async () => {
-    setLoading(true);
     const { data, error } = await supabase.rpc("get_scored_jobs_for_user", {
       input_user_id: userId,
     });
 
-    if (error) {
-      console.error("Error fetching matches:", error);
-    } else {
-      setJobs((data as ScoredJob[]) || []);
-    }
+    if (error) console.error(error);
+    else setJobs(data || []);
     setLoading(false);
   };
 
-  const triggerAiAnalysis = async () => {
-    setIsAiProcessing(true);
+  // 2. Trigger re-calculation (Edge Function)
+  const handleUpdateMatches = async () => {
+    setUpdating(true);
     try {
-      // Call the Supabase Edge Function
-      const { error } = await supabase.functions.invoke('ai-job-matcher', {
-        body: { user_id: userId }
+      const { error } = await supabase.functions.invoke("ai-job-matcher", {
+        body: { user_id: userId },
       });
 
       if (error) throw error;
-
-      // Once AI is done, re-fetch the SQL data
       await fetchMatches();
     } catch (err) {
-      console.error("AI Analysis failed:", err);
+      console.error("Update Error:", err);
     } finally {
-      setIsAiProcessing(false);
+      setUpdating(false);
     }
   };
 
@@ -117,71 +93,113 @@ const JobFeed = ({ userId }: { userId: string }) => {
     if (userId) fetchMatches();
   }, [userId]);
 
-  if (loading && !jobs.length)
-    return <div className="text-sm text-gray-500">Loading recommendations...</div>;
+  if (loading)
+    return (
+      <div className="p-4">
+        <Skeleton className="rounded-lg w-full h-64" />
+      </div>
+    );
+
+  const visibleJobs = jobs.filter((j) => (j.match_percentage ?? 0) >= 20);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Recommended Jobs</h2>
+    <div className="space-y-6 mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Job Matches</h2>
+          <p className="text-sm text-gray-600 mt-1">
+            Scores combine profile text analysis (70%) and salary fit (30%).
+          </p>
+        </div>
         <Button
-          size="sm"
-          color="secondary"
-          variant="flat"
-          isLoading={isAiProcessing}
-          onPress={triggerAiAnalysis}
+          className="shadow-md font-semibold"
+          color="primary"
+          isLoading={updating}
+          onPress={handleUpdateMatches}
         >
-          {isAiProcessing ? "AI is Analyzing..." : "Refresh AI Matches"}
+          {updating ? "Updating matches..." : "Update matches"}
         </Button>
       </div>
 
-      {!jobs.length && !loading ? (
-        <div className="text-center py-10 bg-slate-50 rounded-xl">
-          <p className="text-gray-600 mb-4">
-            We haven't analyzed your profile against open jobs yet.
-          </p>
-          <Button
-            color="primary"
-            isLoading={isAiProcessing}
-            onPress={triggerAiAnalysis}
+      {/* Horizontal scrolling job list */}
+      <div className="flex gap-4 overflow-x-auto py-2">
+        {visibleJobs.map((job) => (
+          <Card
+            key={job.job_id}
+            className="min-w-[20rem] flex-shrink-0 h-full hover:-translate-y-1 transition-transform duration-300"
           >
-            Run AI Matcher
-          </Button>
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {jobs.map((job) => (
-            /* ... Keep your existing Card JSX exactly the same ... */
-            /* The data structure from the new RPC matches the old one */
-            <div
-              key={job.job_id}
-              className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition"
-            >
-              {/* ... (Existing Card Header/Body Code) ... */}
-
-              <div className="px-5 py-2">
-                {/* Match Score */}
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-semibold text-lg">{job.title}</h3>
-                  <CircularMatch value={job.match_percentage ?? 0} />
-                </div>
-
-                {/* Skills Logic */}
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {job.matching_skills?.map(s => (
-                    <SkillChip key={s} text={s} variant="have" />
-                  ))}
-                  {job.missing_skills?.map(s => (
-                    <SkillChip key={s} text={s} variant="missing" />
-                  ))}
-                </div>
-
-                <Link href={`/jobs/${job.job_id}`}>
-                  <Button fullWidth variant="ghost" color="primary">View Details</Button>
-                </Link>
+            <CardHeader className="flex justify-between items-start pb-2">
+              <div className="w-3/4">
+                <h3
+                  className="font-bold text-lg leading-tight line-clamp-2"
+                  title={job.title}
+                >
+                  {job.title}
+                </h3>
               </div>
-            </div>
-          ))}
+              <CircularMatch value={job.match_percentage} />
+            </CardHeader>
+
+            <Divider className="my-2" />
+
+            <CardBody className="py-2">
+              <div className="min-h-[60px]">
+                <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+                  Skill Match
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {job.matching_skills.length > 0 ? (
+                    job.matching_skills.slice(0, 4).map((s) => (
+                      <Chip
+                        key={s}
+                        className="text-xs h-6"
+                        color="success"
+                        size="sm"
+                        variant="flat"
+                      >
+                        {s}
+                      </Chip>
+                    ))
+                  ) : (
+                    <span className="text-xs text-gray-400 italic">
+                      No direct skill matches
+                    </span>
+                  )}
+                  {job.matching_skills.length > 4 && (
+                    <span className="text-xs text-gray-500 self-center">
+                      +{job.matching_skills.length - 4}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </CardBody>
+
+            <CardFooter>
+              <Button
+                fullWidth
+                as={Link}
+                className="font-medium"
+                color="primary"
+                href={`/applicant/jobs/details?id=${job.job_id}`}
+                variant="ghost"
+              >
+                View Details
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+
+      {!loading && visibleJobs.length === 0 && (
+        <div className="text-center py-12 text-gray-600 space-y-4">
+          <div>
+            We couldn&#39;t find recommended jobs based on your current profile.
+          </div>
+          <div className="flex items-center justify-center gap-3">
+            <Button as={Link} color="primary" href="/applicant/profile">
+              Update your profile
+            </Button>
+          </div>
         </div>
       )}
     </div>

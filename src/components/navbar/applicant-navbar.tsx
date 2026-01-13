@@ -23,7 +23,6 @@ const navItems = [
   { name: "Dashboard", href: "/applicant/dashboard" },
   { name: "Browse Jobs", href: "/applicant/jobs" },
   { name: "Proposals", href: "/applicant/proposals" },
-  { name: "Contracts", href: "/applicant/contracts" },
   { name: "Messages", href: "/applicant/messages" },
 ];
 

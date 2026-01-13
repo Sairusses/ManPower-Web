@@ -11,8 +11,6 @@ import {
   Input,
   Link,
   Textarea,
-  Select,
-  SelectItem,
   Divider,
   addToast,
 } from "@heroui/react";
@@ -47,7 +45,6 @@ export default function ApplicantJobDetailsPage() {
   // Proposal form states
   const [coverLetter, setCoverLetter] = useState("");
   const [proposedRate, setProposedRate] = useState("");
-  const [estimatedDuration, setEstimatedDuration] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -82,7 +79,7 @@ export default function ApplicantJobDetailsPage() {
   };
 
   const handleApply = async () => {
-    if (!coverLetter || !proposedRate || !estimatedDuration) {
+    if (!coverLetter || !proposedRate) {
       addToast({
         title: "Missing fields",
         description: "Please fill out all required fields.",
@@ -137,7 +134,6 @@ export default function ApplicantJobDetailsPage() {
         applicant_id: user.id,
         cover_letter: coverLetter,
         proposed_rate: parseFloat(proposedRate),
-        estimated_duration: estimatedDuration,
         status: "pending",
         attachments: uploadedFiles,
       });
@@ -388,7 +384,7 @@ export default function ApplicantJobDetailsPage() {
                       label: "font-semibold text-gray-700",
                       inputWrapper: "bg-white",
                     }}
-                    label="Rate (₱)"
+                    label="Expected Salary (₱)"
                     labelPlacement="outside"
                     placeholder="0.00"
                     startContent={
@@ -401,32 +397,6 @@ export default function ApplicantJobDetailsPage() {
                     variant="bordered"
                     onChange={(e) => setProposedRate(e.target.value)}
                   />
-
-                  <Select
-                    classNames={{
-                      label: "font-semibold text-gray-700",
-                      trigger: "bg-white",
-                    }}
-                    label="Estimated Duration"
-                    labelPlacement="outside"
-                    placeholder="How long will this take?"
-                    selectedKeys={estimatedDuration ? [estimatedDuration] : []}
-                    variant="bordered"
-                    onSelectionChange={(keys) =>
-                      setEstimatedDuration(Array.from(keys)[0] as string)
-                    }
-                  >
-                    {[
-                      "1 month",
-                      "3 months",
-                      "6 months",
-                      "1 year",
-                      "1 - 5 years",
-                      "5 years +",
-                    ].map((item) => (
-                      <SelectItem key={item}>{item}</SelectItem>
-                    ))}
-                  </Select>
 
                   <Textarea
                     classNames={{
@@ -447,6 +417,16 @@ export default function ApplicantJobDetailsPage() {
                     <span className="text-sm font-semibold text-gray-700">
                       Attachments
                     </span>
+                    <div
+                      aria-label="Attachments note"
+                      className="text-gray-500 bg-gray-100 p-3 rounded-md text-sm leading-relaxed opacity-90"
+                      role="note"
+                    >
+                      <strong>Note:</strong> Attach necessary documents for your
+                      job application — resume; barangay clearance; NBI/police
+                      clearance; valid ID; diploma/transcript; certificates;
+                      other supporting documents.
+                    </div>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                       <label className="flex flex-col items-center justify-center w-full h-24 cursor-pointer">
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">

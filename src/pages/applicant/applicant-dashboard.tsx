@@ -12,12 +12,12 @@ import {
   Link,
 } from "@heroui/react";
 import {
-  Briefcase,
   FileText,
   CheckCircle,
   Search,
   Eye,
   Zap,
+  Target, // Added for Matched Jobs icon
 } from "lucide-react";
 
 import { getSupabaseClient } from "@/lib/supabase";
@@ -27,6 +27,7 @@ export default function ApplicantDashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
+  const [matchedJobCount, setMatchedJobCount] = useState(0); // New State
   const [loading, setLoading] = useState(true);
   const supabase = getSupabaseClient();
 
@@ -55,7 +56,7 @@ export default function ApplicantDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      // Fetch recent open jobs
+      // 1. Fetch recent open jobs
       const { data: jobsData } = await supabase
         .from("jobs")
         .select("*")
@@ -63,7 +64,7 @@ export default function ApplicantDashboard() {
         .order("created_at", { ascending: false })
         .limit(5);
 
-      // Fetch user's proposals
+      // 2. Fetch user's proposals
       const { data: proposalsData } = await supabase
         .from("proposals")
         .select(
@@ -75,15 +76,27 @@ export default function ApplicantDashboard() {
         .eq("applicant_id", user?.id)
         .order("created_at", { ascending: false });
 
-      // Fetch user's contracts
+      // 3. Fetch user's contracts (Still needed for "Completed Jobs" card)
       const { data: contractsData } = await supabase
         .from("contracts")
         .select(`*`)
         .eq("applicant_id", user?.id);
 
+      // 4. Fetch Job Matches (New Logic)
+      const { data: matchesData } = await supabase
+        .from("job_matches")
+        .select("match_score")
+        .eq("user_id", user?.id);
+
+      // Calculate matches >= 70
+      const validMatches = (matchesData || []).filter(
+        (m: any) => parseFloat(m.match_score) >= 70,
+      ).length;
+
       setJobs(jobsData || []);
       setProposals(proposalsData || []);
       setContracts((contractsData as Contract[]) || []);
+      setMatchedJobCount(validMatches);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
@@ -98,7 +111,7 @@ export default function ApplicantDashboard() {
   }, [user]);
 
   const stats = {
-    activeContracts: contracts.filter((c) => c.status === "active").length,
+    matchedJobs: matchedJobCount, // Updated from activeContracts
     pendingProposals: proposals.filter((p) => p.status === "pending").length,
     completedContracts: contracts.filter((c) => c.status === "completed")
       .length,
@@ -130,6 +143,7 @@ export default function ApplicantDashboard() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {/* CHANGED: Active Contracts -> Matched Jobs */}
           <Card
             className="p-5 bg-white border border-gray-200"
             radius="lg"
@@ -137,15 +151,17 @@ export default function ApplicantDashboard() {
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-3">
               <div className="text-sm font-semibold text-gray-600 uppercase tracking-wider">
-                Active Contracts
+                Matched Jobs
               </div>
-              <Briefcase className="h-5 w-5 text-primary" />
+              <Target className="h-5 w-5 text-primary" />
             </CardHeader>
             <CardBody className="p-0">
               <div className="text-4xl font-bold text-gray-900">
-                {stats.activeContracts}
+                {stats.matchedJobs}
               </div>
-              <p className="text-xs text-gray-500 mt-1">Currently working on</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Recommended Jobs For You
+              </p>
             </CardBody>
           </Card>
 
@@ -156,7 +172,7 @@ export default function ApplicantDashboard() {
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-3">
               <div className="text-sm font-semibold text-gray-600 uppercase tracking-wider">
-                Pending Proposals
+                Pending Applications
               </div>
               <FileText className="h-5 w-5 text-primary" />
             </CardHeader>
@@ -165,7 +181,7 @@ export default function ApplicantDashboard() {
                 {stats.pendingProposals}
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Awaiting client response
+                Awaiting application response
               </p>
             </CardBody>
           </Card>
@@ -218,7 +234,7 @@ export default function ApplicantDashboard() {
             </CardHeader>
             <Divider />
             <CardBody className="space-y-2">
-              {jobs.slice(0, 5).map((job) => (
+              {jobs.slice(0, 3).map((job) => (
                 <div
                   key={job.id}
                   className="hover:bg-gray-100 transition-colors rounded-sm px-4 py-3"
@@ -274,7 +290,6 @@ export default function ApplicantDashboard() {
                         )}
                     </div>
                     <div className="self-center mt-0">
-                      {/* how to center the link button */}
                       <Link href={`/applicant/jobs/details?id=${job.id}`}>
                         <Button color="primary" size="sm" variant="flat">
                           View
@@ -354,16 +369,12 @@ export default function ApplicantDashboard() {
                         >
                           {proposal.status}
                         </Chip>
-
-                        {proposal.proposed_rate && (
-                          <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
-                            ₱{Number(proposal.proposed_rate).toLocaleString()}
-                          </span>
-                        )}
                       </div>
                     </div>
                     <div className="self-center mt-0">
-                      <Link href={`/applicant/proposals/details?id=${proposal.id}`}>
+                      <Link
+                        href={`/applicant/proposals/details?id=${proposal.id}`}
+                      >
                         <Button color="primary" size="sm" variant="flat">
                           View
                         </Button>

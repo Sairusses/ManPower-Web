@@ -99,7 +99,7 @@ export default function ApplicantProposalsDetails() {
             </Button>
           </Link>
           <h1 className="font-extrabold text-2xl sm:text-3xl text-gray-900 tracking-tight">
-            Proposal Details
+            Application Details
           </h1>
         </div>
 
@@ -222,9 +222,9 @@ export default function ApplicantProposalsDetails() {
                             (skill: string, idx: number) => (
                               <Chip
                                 key={idx}
-                                className="bg-white"
+                                color="primary"
                                 size="sm"
-                                variant="bordered"
+                                variant="flat"
                               >
                                 {skill}
                               </Chip>

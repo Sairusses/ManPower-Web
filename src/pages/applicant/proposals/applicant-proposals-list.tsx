@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { addToast, Button, Card, Chip, Link } from "@heroui/react";
-import { Eye, FileText, Clock, Calendar, Zap } from "lucide-react";
+import { Eye, FileText, Clock, Zap } from "lucide-react";
 
 import { getSupabaseClient } from "@/lib/supabase";
 import { Proposal } from "@/lib/types.ts";
@@ -24,7 +24,7 @@ export default function ApplicantProposalsList() {
       if (userError || !user) {
         addToast({
           title: "Not logged in",
-          description: "You must be logged in to view proposals.",
+          description: "You must be logged in to view applied jobs.",
           color: "danger",
         });
 
@@ -66,7 +66,7 @@ export default function ApplicantProposalsList() {
         {/* Header */}
         <div className="mb-8 sm:mb-10">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
-            <FileText className="h-7 w-7 text-primary-600" /> My Proposals
+            <FileText className="h-7 w-7 text-primary-600" /> My Applied Jobs
           </h1>
           <p className="text-lg text-gray-500 mt-1">
             Review the status and details of all submitted applications.
@@ -134,22 +134,6 @@ export default function ApplicantProposalsList() {
                       >
                         {proposal.status}
                       </Chip>
-
-                      {/* Proposed Rate */}
-                      {proposal.proposed_rate && (
-                        <span className="text-sm text-gray-700 flex items-center gap-1">
-                          Rate: ₱{" "}
-                          {Number(proposal.proposed_rate).toLocaleString()}
-                        </span>
-                      )}
-
-                      {/* Estimated Duration */}
-                      {proposal.estimated_duration && (
-                        <span className="text-sm text-gray-500 flex items-center gap-1">
-                          <Calendar className="h-3.5 w-3.5" />
-                          Duration: {proposal.estimated_duration}
-                        </span>
-                      )}
                     </div>
                   </div>
 

@@ -100,7 +100,7 @@ const JobFeed = ({ userId }: { userId: string }) => {
       </div>
     );
 
-  const visibleJobs = jobs.filter((j) => (j.match_percentage ?? 0) >= 20);
+  const visibleJobs = jobs.filter((j) => (j.match_percentage ?? 0) > 20);
 
   return (
     <div className="space-y-6 mx-auto">
@@ -134,10 +134,10 @@ const JobFeed = ({ userId }: { userId: string }) => {
                   {job.title}
                 </h3>
 
-                {job.match_percentage > 70 && (
+                {job.match_percentage >= 70 && (
                   <Chip
                     className="mt-1 text-xs font-bold uppercase tracking-wide text-white"
-                    color="success"
+                    color="primary"
                     radius="lg"
                     size="md"
                     startContent={<span>⭐</span>}
@@ -163,7 +163,7 @@ const JobFeed = ({ userId }: { userId: string }) => {
                       <Chip
                         key={s}
                         className="text-xs h-6"
-                        color="success"
+                        color="primary"
                         size="sm"
                         variant="flat"
                       >

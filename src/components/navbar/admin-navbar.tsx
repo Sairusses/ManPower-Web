@@ -22,7 +22,7 @@ import { supabase } from "@/lib/supabase.ts";
 const navItems = [
   { name: "Dashboard", href: "/admin/dashboard" },
   { name: "Jobs", href: "/admin/jobs" },
-  { name: "Proposals", href: "/admin/proposals" },
+  { name: "Applicants", href: "/admin/applicants" },
   { name: "Messages", href: "/admin/messages" },
 ];
 

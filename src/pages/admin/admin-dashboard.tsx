@@ -88,12 +88,14 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
             Welcome back, {user.user_metadata.display_name ?? "User"}
           </h1>
-          <p className="text-gray-600">Manage your jobs and review proposals</p>
+          <p className="text-gray-600">
+            Manage your jobs and review applicants
+          </p>
         </div>
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
@@ -119,14 +121,14 @@ export default function AdminDashboard() {
             <CardBody className="items-start pl-10 py-0">
               <div className="text-2xl font-bold">{stats.activeJobs}</div>
               <div className="text-sm text-gray-600 pb-5">
-                Currently accepting proposals
+                Currently accepting applicants
               </div>
             </CardBody>
           </Card>
           {/* Proposals Stats */}
           <Card radius="sm" shadow="sm">
             <CardHeader className="flex flex-row items-center justify-between px-10 pt-5">
-              <div className="text-md font-medium">Pending Proposals</div>
+              <div className="text-md font-medium">Pending applicants</div>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardBody className="items-start pl-10 py-0">

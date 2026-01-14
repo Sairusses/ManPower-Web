@@ -40,8 +40,6 @@ export default function AdminProposalsList() {
         .select(
           `
           id,
-          proposed_rate,
-          estimated_duration,
           job:jobs!inner(id, title), 
           applicant:users(id, full_name, avatar_url)
           `,
@@ -146,14 +144,14 @@ export default function AdminProposalsList() {
                     <Link
                       key={proposal.id}
                       className="block w-full"
-                      href={`/admin/proposals/details?id=${proposal.id}`}
+                      href={`/admin/applicants/details?id=${proposal.id}`}
                     >
                       <Card
                         isPressable
                         className="w-full h-full bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg hover:scale-[1.02] transition-transform duration-300"
                       >
                         <CardBody className="p-6 flex flex-col justify-between h-full">
-                          <div className="flex items-center gap-4 border-b border-gray-100 pb-4 mb-4">
+                          <div className="flex items-center gap-4">
                             <Avatar
                               alt={proposal.applicant?.full_name}
                               radius="full"
@@ -166,27 +164,6 @@ export default function AdminProposalsList() {
                               </p>
                               <p className="text-sm text-blue-600 font-medium">
                                 View Profile
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Bottom: Rate and Duration */}
-                          <div className="flex justify-between items-end gap-4">
-                            <div>
-                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
-                                Duration
-                              </p>
-                              <p className="font-semibold text-gray-800 text-sm sm:text-base">
-                                {proposal.estimated_duration}
-                              </p>
-                            </div>
-
-                            <div className="text-right">
-                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
-                                Proposed Rate
-                              </p>
-                              <p className="font-bold text-blue-600 text-lg sm:text-2xl">
-                                ₱{proposal.proposed_rate}
                               </p>
                             </div>
                           </div>

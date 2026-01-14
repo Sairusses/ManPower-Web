@@ -13,7 +13,7 @@ export interface User {
   location?: string;
   bio?: string;
   skills?: string[];
-  hourly_rate?: number;
+  expected_salary?: number;
   company_name?: string;
   website?: string;
   resume_url?: string;
@@ -49,8 +49,6 @@ export interface Proposal {
   job_id: string;
   applicant_id: string;
   cover_letter?: string;
-  proposed_rate?: number;
-  estimated_duration?: string;
   status: ProposalStatus;
   attachments: string[];
   created_at: string;

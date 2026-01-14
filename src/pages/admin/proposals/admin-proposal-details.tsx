@@ -32,23 +32,26 @@ export default function AdminProposalDetails() {
           `
           id,
           cover_letter,
-          proposed_rate,
           status,
           attachments,
           created_at,
+          job_id,
+          applicant_id,
           job:jobs(id, title, description),
-          applicant:users(id, full_name, avatar_url, email, phone, location, bio, skills, hourly_rate, resume_url)
+          applicant:users(id, full_name, avatar_url, email, phone, location, bio, skills, expected_salary, resume_url)
         `
         )
         .eq("id", id)
         .single();
 
       if (error) throw error;
+
+      // Handle attachments: Data shows they are an array of JSON strings
       if (Array.isArray(data.attachments)) {
         const parsedFiles = data.attachments
           .map((f: string) => {
             try {
-              return JSON.parse(f);
+              return typeof f === 'string' ? JSON.parse(f) : f;
             } catch {
               return null;
             }
@@ -92,16 +95,13 @@ export default function AdminProposalDetails() {
       if (updateError) throw updateError;
 
       if (decision === "accepted") {
-        // REMOVED: Contract creation logic.
-
         // 2. Create the initial acceptance message linked to the PROPOSAL
-        const messageContent = `I accepted your proposal for "${proposal.job?.title}"`;
+        const messageContent = `I accepted your application for "${proposal.job?.title}"`;
         const { error: messageError } = await supabase.from("messages").insert([
           {
-            // Removed contract_id
             proposal_id: proposal.id,
             sender_id: userID,
-            receiver_id: proposal.applicant?.id,
+            receiver_id: proposal.applicant?.id, // Uses the joined applicant object
             content: messageContent,
             created_at: new Date().toISOString(),
           },
@@ -118,7 +118,7 @@ export default function AdminProposalDetails() {
               applicantName: proposal.applicant?.full_name,
               jobTitle: proposal.job?.title,
               jobDescription: proposal.job?.description,
-              proposedRate: proposal.proposed_rate,
+              proposedRate: proposal.applicant?.expected_salary,
               coverLetter: proposal.cover_letter,
             },
           },
@@ -177,7 +177,7 @@ export default function AdminProposalDetails() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-1 shadow-sm">
+        <Card className="md:col-span-1 shadow-sm py-2 px-4">
           <CardHeader className="flex items-center gap-3">
             <Avatar
               alt={proposal.applicant?.full_name}
@@ -252,7 +252,7 @@ export default function AdminProposalDetails() {
           </CardBody>
         </Card>
 
-        <Card className="md:col-span-2 shadow-sm">
+        <Card className="md:col-span-2 shadow-sm px-4 py-2">
           <CardHeader>
             <h2 className="text-xl font-semibold">
               Proposal for: {proposal.job?.title}
@@ -266,11 +266,13 @@ export default function AdminProposalDetails() {
               </p>
             </div>
 
-            <div>
-              <p className="text-sm text-gray-500">Proposed Rate</p>
-              <p className="font-bold text-blue-600">
-                ₱{proposal.proposed_rate}
-              </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Proposed Rate</p>
+                <p className="font-bold text-blue-600">
+                  ₱{proposal.applicant?.expected_salary}
+                </p>
+              </div>
             </div>
 
             <div>
@@ -322,7 +324,7 @@ export default function AdminProposalDetails() {
                   isDisabled={submitting}
                   onPress={() => handleDecision("accepted")}
                 >
-                  Accept Proposal
+                  Accept Applicant
                 </Button>
                 <Button
                   color="danger"
@@ -330,7 +332,7 @@ export default function AdminProposalDetails() {
                   variant="flat"
                   onPress={() => handleDecision("rejected")}
                 >
-                  Reject Proposal
+                  Reject Applicant
                 </Button>
               </div>
             )}

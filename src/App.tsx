@@ -53,7 +53,7 @@ function App() {
             <Route element={<AdminJobsDetails />} path="details" />
             <Route element={<EditJob />} path="edit/:id" />
           </Route>
-          <Route path="proposals">
+          <Route path="applicants">
             <Route index element={<AdminProposalsList />} />
             <Route element={<AdminProposalDetails />} path="details" />
           </Route>
@@ -72,7 +72,7 @@ function App() {
             <Route index element={<ApplicantJobsPage />} />
             <Route element={<ApplicantJobDetailsPage />} path="details" />
           </Route>
-          <Route path="proposals">
+          <Route path="applied-jobs">
             <Route index element={<ApplicantProposalsList />} />
             <Route element={<ApplicantProposalsDetails />} path="details" />
           </Route>

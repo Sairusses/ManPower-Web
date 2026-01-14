@@ -88,7 +88,7 @@ export default function ApplicantProposalsDetails() {
     <div className="min-h-screen bg-gray-50/50">
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-4 mb-6 sm:mb-8">
-          <Link href="/applicant/proposals">
+          <Link href="/applicant/applied-jobs">
             <Button
               className="font-medium text-medium py-5 pr-6"
               color="primary"

@@ -75,7 +75,7 @@ export default function ApplicantProposalsList() {
 
         {proposals.length === 0 ? (
           <Card
-            className="text-center p-12 bg-white border border-dashed border-gray-300"
+            className="text-center p-12  items-center bg-white border border-dashed border-gray-300"
             radius="lg"
             shadow="sm"
           >
@@ -155,11 +155,10 @@ export default function ApplicantProposalsList() {
 
                   {/* Action Section (Right Side) */}
                   <div className="flex flex-col items-start sm:items-end flex-shrink-0 gap-2">
-
                     {/* View Button */}
                     <Link
                       className="w-full sm:w-auto" // Full width button on mobile
-                      href={`/applicant/proposals/details?id=${proposal.id}`}
+                      href={`/applicant/applied-jobs/details?id=${proposal.id}`}
                     >
                       <Button
                         className="w-full sm:w-auto" // Ensures responsiveness

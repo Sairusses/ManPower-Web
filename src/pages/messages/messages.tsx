@@ -411,7 +411,7 @@ export default function MessagesPage() {
                           : adminProfile?.full_name}
                       </strong>
                       <span className="text-xs text-gray-500">
-                        Ref: {selectedConversation.job?.title}
+                        {selectedConversation.job?.title}
                       </span>
                     </div>
                   </div>

@@ -17,7 +17,7 @@ import {
   Search,
   Eye,
   Zap,
-  Target, // Added for Matched Jobs icon
+  Target,
 } from "lucide-react";
 
 import { getSupabaseClient } from "@/lib/supabase";
@@ -27,7 +27,7 @@ export default function ApplicantDashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
-  const [matchedJobCount, setMatchedJobCount] = useState(0); // New State
+  const [matchedJobCount, setMatchedJobCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const supabase = getSupabaseClient();
 
@@ -56,7 +56,6 @@ export default function ApplicantDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      // 1. Fetch recent open jobs
       const { data: jobsData } = await supabase
         .from("jobs")
         .select("*")
@@ -64,7 +63,6 @@ export default function ApplicantDashboard() {
         .order("created_at", { ascending: false })
         .limit(5);
 
-      // 2. Fetch user's proposals
       const { data: proposalsData } = await supabase
         .from("proposals")
         .select(
@@ -76,19 +74,16 @@ export default function ApplicantDashboard() {
         .eq("applicant_id", user?.id)
         .order("created_at", { ascending: false });
 
-      // 3. Fetch user's contracts (Still needed for "Completed Jobs" card)
       const { data: contractsData } = await supabase
         .from("contracts")
         .select(`*`)
         .eq("applicant_id", user?.id);
 
-      // 4. Fetch Job Matches (New Logic)
       const { data: matchesData } = await supabase
         .from("job_matches")
         .select("match_score")
         .eq("user_id", user?.id);
 
-      // Calculate matches >= 70
       const validMatches = (matchesData || []).filter(
         (m: any) => parseFloat(m.match_score) >= 70,
       ).length;
@@ -137,7 +132,7 @@ export default function ApplicantDashboard() {
             </span>
           </h1>
           <p className="text-lg text-gray-500 mt-1">
-            Find new opportunities and manage your contracts and proposals.
+            Find new opportunities and manage your job applications.
           </p>
         </div>
 
@@ -325,7 +320,7 @@ export default function ApplicantDashboard() {
                   Track your submitted applications
                 </div>
               </div>
-              <Link href="/applicant/proposals">
+              <Link href="/applicant/applied-jobs">
                 {" "}
                 <Button
                   color="primary"
@@ -373,7 +368,7 @@ export default function ApplicantDashboard() {
                     </div>
                     <div className="self-center mt-0">
                       <Link
-                        href={`/applicant/proposals/details?id=${proposal.id}`}
+                        href={`/applicant/applied-jobs/details?id=${proposal.id}`}
                       >
                         <Button color="primary" size="sm" variant="flat">
                           View

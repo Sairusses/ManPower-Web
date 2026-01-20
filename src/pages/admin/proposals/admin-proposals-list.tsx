@@ -87,7 +87,7 @@ export default function AdminProposalsList() {
         {/* Header */}
         <header className="text-center mb-10">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
-            Proposal Management
+            Applicant Management
           </h1>
           <p className="text-gray-600 text-base sm:text-lg">
             Review and manage submissions for your job postings.

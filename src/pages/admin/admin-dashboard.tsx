@@ -170,7 +170,7 @@ export default function AdminDashboard() {
                           <div className="flex items-center gap-2 mt-2">
                             <Chip
                               color={
-                                job.status === "open" ? "default" : "primary"
+                                job.status === "open" ? "primary" : "default"
                               }
                             >
                               {job.status}
@@ -222,12 +222,59 @@ export default function AdminDashboard() {
               </div>
             </CardHeader>
             <CardBody>
-              <div className="text-center py-8 text-gray-500">
-                <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p>No proposals yet</p>
-                <p className="text-sm">
-                  Post a job to start receiving proposals
-                </p>
+              <div className="space-y-4 flex flex-col">
+                {proposals.length > 0 ? (
+                  proposals.slice(0, 3).map((proposal) => {
+                    const relatedJob = jobs.find(
+                      (j) => j.id === proposal.job_id,
+                    );
+
+                    return (
+                      <Card key={proposal.id} radius="sm" shadow="sm">
+                        <CardBody>
+                          <div className="flex items-center justify-between p-4 rounded-lg">
+                            <div className="flex-1">
+                              <h3 className="font-medium">
+                                {relatedJob ? relatedJob.title : "Unknown Job"}
+                              </h3>
+                              <p className="text-sm text-gray-600 line-clamp-1">
+                                {proposal.cover_letter ||
+                                  "View details for content..."}
+                              </p>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Chip color="primary" size="md">
+                                  {proposal.status}
+                                </Chip>
+                                <span className="text-xs text-gray-400">
+                                  {new Date(
+                                    proposal.created_at,
+                                  ).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Link
+                                href={`/admin/jobs/details?id=${proposal.job_id}`}
+                              >
+                                <Button size="sm" variant="ghost">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </Link>
+                            </div>
+                          </div>
+                        </CardBody>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                    <p>No proposals yet</p>
+                    <p className="text-sm">
+                      Post a job to start receiving proposals
+                    </p>
+                  </div>
+                )}
               </div>
             </CardBody>
           </Card>

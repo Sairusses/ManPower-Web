@@ -58,22 +58,44 @@ export default function MessagesPage() {
 
   useEffect(() => {
     if (!userProfile) return;
-    const loadConversations = async () => {
-      // ONLY fetch proposals now
+    const loadConversationsAndPreviews = async () => {
       let proposalsQuery = supabase
         .from("proposals")
-        .select("*, applicant:applicant_id(*)");
+        .select("*, applicant:applicant_id(*), job:job_id(title)")
+        .order("created_at", { ascending: false });
 
       if (userProfile.role === "applicant") {
         proposalsQuery = proposalsQuery.eq("applicant_id", userProfile.id);
       }
 
       const { data: proposals } = await proposalsQuery;
+      const conversationList = proposals || [];
 
-      setConversations(proposals || []);
+      setConversations(conversationList);
+
+      if (conversationList.length > 0) {
+        const proposalIds = conversationList.map((c) => c.id);
+
+        const { data: allMessages } = await supabase
+          .from("messages")
+          .select("*")
+          .in("proposal_id", proposalIds)
+          .order("created_at", { ascending: true });
+
+        if (allMessages) {
+          const grouped = allMessages.reduce((acc: any, msg: any) => {
+            if (!acc[msg.proposal_id]) acc[msg.proposal_id] = [];
+            acc[msg.proposal_id].push(msg);
+
+            return acc;
+          }, {});
+
+          setMessagesByConversation(grouped);
+        }
+      }
     };
 
-    loadConversations();
+    loadConversationsAndPreviews();
   }, [userProfile, supabase]);
 
   useEffect(() => {
@@ -86,15 +108,20 @@ export default function MessagesPage() {
       found = conversations.find((c) => c.id === proposalId);
     }
 
-    if (found) setSelectedConversation(found);
-    else setSelectedConversation(null);
-  }, [params, conversations]);
+    if (found) {
+      setSelectedConversation(found);
+      if (messagesByConversation[found.id]) {
+        setMessages(messagesByConversation[found.id]);
+      }
+    } else {
+      setSelectedConversation(null);
+    }
+  }, [params, conversations, messagesByConversation]);
 
   useEffect(() => {
     if (!selectedConversation) return;
 
     const loadMessages = async () => {
-      // Always query by proposal_id
       const query = supabase
         .from("messages")
         .select("*")
@@ -111,7 +138,7 @@ export default function MessagesPage() {
     };
 
     loadMessages();
-  }, [selectedConversation, supabase]);
+  }, [selectedConversation?.id, supabase]);
 
   useEffect(() => {
     const channel = supabase
@@ -121,14 +148,15 @@ export default function MessagesPage() {
         { event: "INSERT", schema: "public", table: "messages" },
         (payload) => {
           const msg = payload.new;
-          // Only check proposal_id
           const convoId = msg.proposal_id;
 
           if (!convoId) return;
 
           setMessagesByConversation((prev: any) => {
             const current = prev[convoId] || [];
+
             if (current.some((m: any) => m.id === msg.id)) return prev;
+
             return { ...prev, [convoId]: [...current, msg] };
           });
 
@@ -137,10 +165,11 @@ export default function MessagesPage() {
           if (activeConvo && activeConvo.id === convoId) {
             setMessages((prev) => {
               if (prev.some((m) => m.id === msg.id)) return prev;
+
               return [...prev, msg];
             });
           }
-        }
+        },
       )
       .subscribe();
 
@@ -152,6 +181,7 @@ export default function MessagesPage() {
   useEffect(() => {
     if (chatContainerRef.current) {
       const { scrollHeight, clientHeight } = chatContainerRef.current;
+
       chatContainerRef.current.scrollTo({
         top: scrollHeight - clientHeight,
         behavior: "smooth",
@@ -172,12 +202,21 @@ export default function MessagesPage() {
     };
 
     setMessages((prev) => [...prev, optimistic]);
+
+    setMessagesByConversation((prev: any) => ({
+      ...prev,
+      [selectedConversation.id]: [
+        ...(prev[selectedConversation.id] || []),
+        optimistic,
+      ],
+    }));
+
     setNewMessage("");
 
     const messageData: any = {
       sender_id: userProfile.id,
       content: optimistic.content,
-      proposal_id: selectedConversation.id, // Always use proposal_id
+      proposal_id: selectedConversation.id,
     };
 
     const { data, error } = await supabase
@@ -190,6 +229,12 @@ export default function MessagesPage() {
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
     } else {
       setMessages((prev) => prev.map((m) => (m.id === tempId ? data : m)));
+      setMessagesByConversation((prev: any) => {
+        const current = prev[selectedConversation.id] || [];
+        const updated = current.map((m: any) => (m.id === tempId ? data : m));
+
+        return { ...prev, [selectedConversation.id]: updated };
+      });
     }
   };
 
@@ -198,7 +243,6 @@ export default function MessagesPage() {
       ? "/admin/messages"
       : "/applicant/messages";
 
-    // Only one route type now
     navigate(`${basePath}?proposalId=${item.id}`);
 
     if (messagesByConversation[item.id]) {
@@ -216,28 +260,77 @@ export default function MessagesPage() {
     navigate(basePath);
   };
 
+  const isWithinFiveMinutes = (date1: string, date2: string) => {
+    const d1 = new Date(date1).getTime();
+    const d2 = new Date(date2).getTime();
+
+    return Math.abs(d1 - d2) < 5 * 60 * 1000;
+  };
+
+  const formatMessageTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+
+    const isToday =
+      date.getDate() === now.getDate() &&
+      date.getMonth() === now.getMonth() &&
+      date.getFullYear() === now.getFullYear();
+
+    if (isToday) {
+      return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } else {
+      return date.toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+  };
+
+  const sortedConversations = [...conversations].sort((a, b) => {
+    const msgsA = messagesByConversation[a.id] || [];
+    const msgsB = messagesByConversation[b.id] || [];
+
+    const lastTimeA =
+      msgsA.length > 0
+        ? new Date(msgsA[msgsA.length - 1].created_at).getTime()
+        : new Date(a.created_at).getTime();
+
+    const lastTimeB =
+      msgsB.length > 0
+        ? new Date(msgsB[msgsB.length - 1].created_at).getTime()
+        : new Date(b.created_at).getTime();
+
+    return lastTimeB - lastTimeA;
+  });
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-4 px-4 h-[calc(100vh-20px)] lg:h-auto">
+      <div className="max-w-7xl mx-auto py-4 px-4 h-[calc(100vh-20px)] lg:h-screen">
         <h1 className="text-3xl font-bold mb-4">Messages</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100%-60px)] md:h-[400px] lg:h-[550px]">
           {/* SIDEBAR */}
           <Card
-            className={`lg:col-span-1 h-full ${
-              selectedConversation ? "hidden lg:block" : "block"
+            className={`lg:col-span-1 h-full flex flex-col ${
+              selectedConversation ? "hidden lg:flex" : "flex"
             }`}
             radius="sm"
             shadow="sm"
           >
-            <CardHeader>
+            <CardHeader className="shrink-0">
               <strong className="px-4 text-lg">Conversations</strong>
             </CardHeader>
-            <CardBody className="p-0 overflow-y-auto">
-              {conversations.map((item) => {
+            <CardBody className="p-0 flex-1 overflow-y-auto min-h-0">
+              {sortedConversations.map((item) => {
                 const other =
                   userProfile?.role === "admin" ? item.applicant : adminProfile;
                 const convoMsgs = messagesByConversation[item.id] ?? [];
+
                 const latestMessage =
                   convoMsgs.length > 0
                     ? convoMsgs[convoMsgs.length - 1].content
@@ -246,7 +339,7 @@ export default function MessagesPage() {
                 return (
                   <button
                     key={item.id}
-                    className={`w-full p-4 text-left border-b border-gray-200 ${
+                    className={`w-full p-4 text-left border-b border-gray-200 shrink-0 ${
                       selectedConversation?.id === item.id
                         ? "bg-blue-50"
                         : "hover:bg-gray-50"
@@ -271,10 +364,14 @@ export default function MessagesPage() {
                             size="sm"
                             variant="flat"
                           >
-                            {/* Changed from Type to Status (Accepted/Pending) */}
                             {item.status}
                           </Chip>
                         </div>
+
+                        <p className="text-xs text-blue-600 font-medium truncate mb-1">
+                          {item.job?.title || "Unknown Job"}
+                        </p>
+
                         <p className="text-sm text-gray-600 truncate">
                           {latestMessage}
                         </p>
@@ -313,6 +410,9 @@ export default function MessagesPage() {
                           ? selectedConversation.applicant?.full_name
                           : adminProfile?.full_name}
                       </strong>
+                      <span className="text-xs text-gray-500">
+                        Ref: {selectedConversation.job?.title}
+                      </span>
                     </div>
                   </div>
 
@@ -332,17 +432,34 @@ export default function MessagesPage() {
                 <CardBody className="flex-1 flex flex-col p-0 overflow-hidden">
                   <div
                     ref={chatContainerRef}
-                    className="flex-1 w-full overflow-y-auto p-4 space-y-3"
+                    className="flex-1 w-full overflow-y-auto p-4"
                   >
-                    {messages.map((msg) => {
+                    {messages.map((msg, index) => {
                       const isOwn = msg.sender_id === userProfile?.id;
+                      const prevMsg = messages[index - 1];
+                      const nextMsg = messages[index + 1];
+
+                      const isSequence =
+                        prevMsg &&
+                        prevMsg.sender_id === msg.sender_id &&
+                        isWithinFiveMinutes(msg.created_at, prevMsg.created_at);
+
+                      const isLastInSequence =
+                        !nextMsg ||
+                        nextMsg.sender_id !== msg.sender_id ||
+                        !isWithinFiveMinutes(
+                          nextMsg.created_at,
+                          msg.created_at,
+                        );
+
+                      const timeString = formatMessageTime(msg.created_at);
 
                       return (
                         <div
                           key={msg.id}
-                          className={`flex ${
-                            isOwn ? "justify-end" : "justify-start"
-                          }`}
+                          className={`flex flex-col w-full ${
+                            isOwn ? "items-end" : "items-start"
+                          } ${isSequence ? "mt-1" : "mt-4"}`}
                         >
                           <div
                             className={`px-4 py-2 rounded-lg max-w-[85%] md:max-w-xs break-words ${
@@ -353,6 +470,11 @@ export default function MessagesPage() {
                           >
                             {msg.content}
                           </div>
+                          {isLastInSequence && (
+                            <span className="text-[10px] text-gray-400 mt-1 px-1">
+                              {timeString}
+                            </span>
+                          )}
                         </div>
                       );
                     })}

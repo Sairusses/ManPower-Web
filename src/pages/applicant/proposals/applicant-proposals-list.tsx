@@ -81,7 +81,7 @@ export default function ApplicantProposalsList() {
           >
             <FileText className="h-12 w-12 mx-auto mb-4 text-gray-400" />
             <h2 className="text-xl font-semibold text-gray-700">
-              You haven&#39;t submitted any proposals yet.
+              You haven&#39;t submitted any applications yet.
             </h2>
             <p className="text-gray-500 mt-2">
               Find the perfect opportunity to start working!

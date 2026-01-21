@@ -128,7 +128,7 @@ export default function JobsList() {
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-3xl font-bold text-gray-900">My Jobs</h1>
-            <Link href="jobs/post">
+            <Link href="post">
               <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                 <Plus className="h-4 w-4 mr-2" />
                 Post New Job
@@ -227,13 +227,13 @@ export default function JobsList() {
                   <div className="flex justify-between items-center">
                     <div className="text-sm text-gray-500" />
                     <div className="flex gap-2">
-                      <Link href={`jobs/details?id=${job.id}`}>
+                      <Link href={`details?id=${job.id}`}>
                         <Button size="sm" variant="ghost">
                           <Eye className="h-4 w-4 mr-2" />
                           View
                         </Button>
                       </Link>
-                      <Link href={`/admin/jobs/edit/${job.id}`}>
+                      <Link href={`edit/${job.id}`}>
                         <Button size="sm" variant="ghost">
                           <Edit className="h-4 w-4 mr-2" />
                           Edit

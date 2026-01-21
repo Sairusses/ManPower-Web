@@ -377,7 +377,7 @@ export default function Index() {
                         <div className="border-t sm:border-t-0 sm:border-l border-gray-100 pt-4 sm:pt-0 sm:pl-6 flex flex-row sm:flex-col justify-between items-center sm:items-end min-w-[170px]">
                           <div className="hidden sm:flex flex-col items-end text-right mb-auto">
                             <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">
-                              Budget
+                              SALARY
                             </span>
                             <span className="font-bold text-lg text-gray-900">
                               ₱{Number(job.budget_min).toLocaleString()} - ₱

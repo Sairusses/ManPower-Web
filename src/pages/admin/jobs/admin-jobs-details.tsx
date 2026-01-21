@@ -133,7 +133,7 @@ export default function AdminJobsDetails() {
               </div>
               {job.budget_min && job.budget_max && (
                 <div>
-                  <strong>Budget:</strong> ₱{job.budget_min} - ₱{job.budget_max}
+                  <strong>Salary:</strong> ₱{job.budget_min} - ₱{job.budget_max}
                 </div>
               )}
               <div>

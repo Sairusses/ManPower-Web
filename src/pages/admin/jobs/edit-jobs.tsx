@@ -198,13 +198,13 @@ export default function EditJob() {
 
           <div className="grid grid-cols-2 gap-4">
             <Input
-              label="Budget Min"
+              label="Min Salary"
               type="number"
               value={budgetMin}
               onChange={(e) => setBudgetMin(e.target.value)}
             />
             <Input
-              label="Budget Max"
+              label="Max Salary"
               type="number"
               value={budgetMax}
               onChange={(e) => setBudgetMax(e.target.value)}

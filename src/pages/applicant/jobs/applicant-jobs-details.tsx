@@ -257,7 +257,7 @@ export default function ApplicantJobDetailsPage() {
                 {/* Desktop Budget (Hidden on mobile) */}
                 <div className="hidden sm:flex flex-col items-end min-w-fit pl-4">
                   <span className="text-xs text-gray-500 uppercase font-semibold">
-                    Budget
+                    Salary
                   </span>
                   <span className="text-xl font-bold text-primary flex items-center">
                     ₱{Number(job?.budget_min || 0).toLocaleString()}

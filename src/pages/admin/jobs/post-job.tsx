@@ -280,7 +280,7 @@ export default function PostJob() {
               <div className="flex flex-row justify-between w-full gap-5">
                 <NumberInput
                   hideStepper={true}
-                  label="Budget Min (₱) *"
+                  label="Min Salary (₱) *"
                   labelPlacement="outside"
                   name="budgetMin"
                   value={budgetMin ?? 0}
@@ -289,7 +289,7 @@ export default function PostJob() {
                 />
                 <NumberInput
                   hideStepper={true}
-                  label="Budget Max (₱) *"
+                  label="Max Salary (₱) *"
                   labelPlacement="outside"
                   name="budgetMax"
                   value={budgetMax ?? 0}
